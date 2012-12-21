@@ -7,10 +7,10 @@ BIN = latexpreview
 OBJ = window.o app.o
 
 CC = g++
-OUT_DIR = release
+OUT_DIR = bin
 
 CFLAGS = -Wall -O3 -I.
-LFLAGS = -Wall -O3 -lboost_system -lboost_iostreams
+LFLAGS = -Wall -O3 -lboost_system -lboost_iostreams -lboost_filesystem
 
 WXCFLAGS = `wx-config --cxxflags`
 WXLFLAGS = `wx-config --libs`
@@ -23,7 +23,7 @@ default: all
 all:     prepare $(OUT_DIR)/$(BIN)
 
 $(OUT_DIR)/$(BIN): $(addprefix $(OUT_DIR)/, $(OBJ))
-	$(CC) $(LFLAGS) -o $(OUT_DIR)/$(BIN) $^ $(WXLFLAGS)
+	$(CC) $(LFLAGS) -o $@ $^ $(WXLFLAGS)
 
 clean:
 	rm -f $(OUT_DIR)/*.o *~
@@ -38,6 +38,4 @@ prepare:
 
 $(OUT_DIR)/%.o: %.cpp %.h
 	$(CC) $(CFLAGS) -o $@ -c $< $(WXCFLAGS)
-
-
 

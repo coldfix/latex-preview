@@ -80,32 +80,6 @@ public:
 };
 
 
-class bp_pipe
-{
-    bp::pipe pipe_;
-    bio::file_descriptor_sink sink_;
-    bio::file_descriptor_source source_;
-public:
-    bp_pipe()
-        : pipe_(bp::create_pipe())
-        , sink_(pipe_.sink, bio::close_handle)
-        , source_(pipe_.source, bio::close_handle)
-    {
-    }
-
-    bio::file_descriptor_sink& sink()
-    {
-        return sink_;
-    }
-
-    bio::file_descriptor_source& source()
-    {
-        return source_;
-    }
-};
-
-
-
 wxString insert_marker = wxT("<!-- ... -->");
 
 
@@ -740,6 +714,38 @@ bool LatexPreviewWindow::BuildTex(
 }
 
 
+bool execute(
+        const std::vector<std::string>& args,
+        execution_info& info)
+{
+    bp::pipe out_pipe(bp::create_pipe()),
+             err_pipe(bp::create_pipe());
+    {
+        bio::file_descriptor_sink out_sink(out_pipe.sink, bio::close_handle),
+                                  err_sink(err_pipe.sink, bio::close_handle);
+        bp::child c = bp::execute(
+            bpi::set_args(args),
+            bpi::bind_stdout(out_sink),
+            bpi::bind_stderr(err_sink),
+            bpi::close_stdin()
+        );
+        info.exitcode = bp::wait_for_exit(c);
+    }
+
+    bio::file_descriptor_source out_source(out_pipe.source, bio::close_handle),
+                                err_source(err_pipe.source, bio::close_handle);
+    string_sink out, err;
+    bio::copy(out_source, out);
+    bio::copy(err_source, err);
+
+	info.cmd = to_wx(args[0]);
+	info.out = to_wx(out.get()); 
+	info.err = to_wx(err.get()); 
+
+	return info.exitcode == 0;
+}
+
+
 bool LatexPreviewWindow::BuildDvi(
 		const wxString& file_tex,
 		const wxString& file_dvi,
@@ -747,28 +753,11 @@ bool LatexPreviewWindow::BuildDvi(
 {
     std::vector<std::string> args;
     bas::push_back(args)
-        ("latex")
+        (bp::search_path("latex"))
         ("--interaction=nonstopmode")
         (to_std(file_tex));
 
-    bp_pipe p_out, p_err;
-    bp::child c = bp::execute(
-        bpi::set_args(args),
-        bpi::bind_stdout(p_out.sink()),
-        bpi::bind_stderr(p_err.sink()),
-        bpi::close_stdin()
-    );
-
-    string_sink out, err;
-    // bio::copy(p_out.source(), out);
-    // bio::copy(p_err.source(), err);
-
-	info.cmd = to_wx("latex");
-	info.out = to_wx(out.get()); 
-	info.err = to_wx(err.get()); 
-	info.exitcode = bp::wait_for_exit(c);
-
-	return info.exitcode == 0;
+    return execute(args, info);
 }
 
 
@@ -780,8 +769,7 @@ bool LatexPreviewWindow::BuildImg(
 		execution_info& info )
 {
     std::vector<std::string> args;
-    bas::push_back(args)
-        ("dvipng");
+    bas::push_back(args)(bp::search_path("dvipng"));
 
     if (m_transparent)
         bas::push_back(args)("-bg")("transparent");
@@ -802,24 +790,7 @@ bool LatexPreviewWindow::BuildImg(
         ("-o")(to_std(file_img))
         (to_std(file_dvi));
 
-    bp_pipe p_out, p_err;
-    bp::child c = bp::execute(
-        bpi::set_args(args),
-        bpi::bind_stdout(p_out.sink()),
-        bpi::bind_stderr(p_err.sink()),
-        bpi::close_stdin()
-    );
-
-    string_sink out, err;
-    // bio::copy(p_out.source(), out);
-    // bio::copy(p_err.source(), err);
-
-	info.cmd = to_wx("dvipng");
-	info.out = to_wx(out.get()); 
-	info.err = to_wx(err.get()); 
-	info.exitcode = bp::wait_for_exit(c);
-
-	return info.exitcode == 0;
+	return execute(args, info);
 }
 
 void LatexPreviewWindow::SetImage(const wxBitmap& img)

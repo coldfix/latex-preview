@@ -56,8 +56,8 @@ struct execution_info
 {
 	int exitcode;
 	wxString cmd,
-			 std_out,
-			 std_err;
+			 out,
+			 err;
 };
 
 

@@ -46,7 +46,63 @@
 #include <string>
 #include <vector>
 #include <boost/process.hpp>
-namespace bp = ::boost::process;
+
+#include <iosfwd>                           // streamsize
+#include <boost/iostreams/categories.hpp>   // sink_tag
+#include <boost/iostreams/copy.hpp> 
+#include <boost/assign/list_inserter.hpp>   // for 'push_back()'
+
+
+namespace bp =  boost::process;
+namespace bpi = boost::process::initializers;
+namespace bfs = boost::filesystem;
+namespace bio = boost::iostreams;
+namespace bas = boost::assign;
+
+
+class string_sink
+{
+    std::string str;
+public:
+    typedef char      char_type;
+    typedef bio::sink_tag  category;
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        str.append(s, n);
+        return n;
+    }
+
+    std::string get() const
+    {
+        return str;
+    }
+};
+
+
+class bp_pipe
+{
+    bp::pipe pipe_;
+    bio::file_descriptor_sink sink_;
+    bio::file_descriptor_source source_;
+public:
+    bp_pipe()
+        : pipe_(bp::create_pipe())
+        , sink_(pipe_.sink, bio::close_handle)
+        , source_(pipe_.source, bio::close_handle)
+    {
+    }
+
+    bio::file_descriptor_sink& sink()
+    {
+        return sink_;
+    }
+
+    bio::file_descriptor_source& source()
+    {
+        return source_;
+    }
+};
 
 
 
@@ -62,22 +118,6 @@ wxString insert_marker = wxT("<!-- ... -->");
 	inline std::string to_std(const wxString& wxstr)
 	{
 		return std::string(wxstr.mb_str(wxConvFile));
-	}
-	
-	inline std::string shell_quote(const std::string& stdstr)
-	{
-		return '"' + stdstr + '"';
-	}
-
-	inline std::string shell_quote(const wxString& wxstr)
-	{
-		return shell_quote(to_std(wxstr));
-	}
-
-	std::string search_path(const std::string& cmd)
-	{
-		// to do ...
-		return cmd;
 	}
 
 	class ChangeCwd
@@ -603,7 +643,7 @@ bool LatexPreviewWindow::Rebuild(bool switch_to_log)
 
 	m_control_log_operation->ChangeValue(info.cmd);
 	m_control_log_exitcode->ChangeValue(wxString::Format(wxT("%i") , info.exitcode));
-	m_control_log->ChangeValue(info.std_out);
+	m_control_log->ChangeValue(info.out);
 
 	if (success) {
 		SetImage(img);
@@ -686,14 +726,14 @@ bool LatexPreviewWindow::BuildTex(
 
 	wxString tex = texplate;
 	if (tex.Replace(insert_marker, text) == 0) {
-		info.std_out = wxT("Did not find insert marker ('") + insert_marker + wxT("') in template!");
-		info.std_err = wxT("");
+		info.out = wxT("Did not find insert marker ('") + insert_marker + wxT("') in template!");
+		info.err = wxT("");
 		return false;
 	}
 
 	if (!SaveFile(file_tex, tex)) {
-		info.std_out = wxT("Failed to generate tex file: '") + file_tex + wxT("'.");
-		info.std_err = wxT("");
+		info.out = wxT("Failed to generate tex file: '") + file_tex + wxT("'.");
+		info.err = wxT("");
 	}
 
 	return true;
@@ -705,22 +745,28 @@ bool LatexPreviewWindow::BuildDvi(
 		const wxString& file_dvi,
 		execution_info& info )
 {
-	std::string cmd(
-			search_path("latex") +
-			" --interaction=nonstopmode" +
-			" " + shell_quote(file_tex) );
+    std::vector<std::string> args;
+    bas::push_back(args)
+        ("latex")
+        ("--interaction=nonstopmode")
+        (to_std(file_tex));
 
-	bp::context ctx; 
-	ctx.stdout_behavior = bp::capture_stream(); 
-	ctx.stderr_behavior = bp::capture_stream(); 
+    bp_pipe p_out, p_err;
+    bp::child c = bp::execute(
+        bpi::set_args(args),
+        bpi::bind_stdout(p_out.sink()),
+        bpi::bind_stderr(p_err.sink()),
+        bpi::close_stdin()
+    );
 
-	bp::child c =  bp::launch_shell(cmd, ctx); 
+    string_sink out, err;
+    bio::copy(p_out.source(), out);
+    bio::copy(p_err.source(), err);
 
-	info.cmd = to_wx(cmd);
-	info.std_out = to_wx( ReadStream(c.get_stdout()) ); 
-	info.std_err = to_wx( ReadStream(c.get_stderr()) ); 
-	bp::status s = c.wait();
-	info.exitcode = s.exit_status();
+	info.cmd = to_wx("latex");
+	info.out = to_wx(out.get()); 
+	info.err = to_wx(err.get()); 
+	info.exitcode = bp::wait_for_exit(c);
 
 	return info.exitcode == 0;
 }
@@ -733,31 +779,45 @@ bool LatexPreviewWindow::BuildImg(
 		bool transparent,
 		execution_info& info )
 {
-	std::string cmd (
-			search_path("dvipng") +
-			( m_transparent ?
-			  " -bg transparent" :
-			  " -bg 'rgb 1.0 1.0 1.0'" ) +
-			" -Q 10" +
-			" -T tight" +
-			" --follow" +
-			( m_filetype == filetype::gif ?
-			  " --gif" :
-			  " --png" ) +
-			" -o " + shell_quote(file_img) +
-			" " + shell_quote(file_dvi) );
+    std::vector<std::string> args;
+    bas::push_back(args)
+        ("dvipng");
 
-	bp::context ctx; 
-	ctx.stdout_behavior = bp::capture_stream(); 
-	ctx.stderr_behavior = bp::capture_stream(); 
+    if (m_transparent)
+        bas::push_back(args)("-bg")("transparent");
+    else
+        bas::push_back(args)("-bg")("rgb 1.0 1.0 1.0");
 
-	bp::child c =  bp::launch_shell(cmd, ctx); 
+    bas::push_back(args)
+        ("-Q")("10")
+        ("-T")("tight")
+        ("--follow");
 
-	info.cmd = to_wx(cmd);
-	info.std_out = to_wx( ReadStream(c.get_stdout()) ); 
-	info.std_err = to_wx( ReadStream(c.get_stderr()) ); 
-	bp::status s = c.wait();
-	info.exitcode = s.exit_status();
+    if (m_filetype == filetype::gif)
+        bas::push_back(args)("--gif");
+    else
+        bas::push_back(args)("--png");
+
+    bas::push_back(args)
+        ("-o")(to_std(file_img))
+        (to_std(file_dvi));
+
+    bp_pipe p_out, p_err;
+    bp::child c = bp::execute(
+        bpi::set_args(args),
+        bpi::bind_stdout(p_out.sink()),
+        bpi::bind_stderr(p_err.sink()),
+        bpi::close_stdin()
+    );
+
+    string_sink out, err;
+    bio::copy(p_out.source(), out);
+    bio::copy(p_err.source(), err);
+
+	info.cmd = to_wx("dvipng");
+	info.out = to_wx(out.get()); 
+	info.err = to_wx(err.get()); 
+	info.exitcode = bp::wait_for_exit(c);
 
 	return info.exitcode == 0;
 }

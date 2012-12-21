@@ -9,8 +9,8 @@ OBJ = latexpreviewwindow.o latexpreviewapp.o
 CC = g++
 OUT_DIR = release
 
-CFLAGS = -Wall -O3
-LFLAGS = -Wall -O3  -lboost_system
+CFLAGS = -Wall -O3 -I.
+LFLAGS = -Wall -O3 -lboost_system -lboost_iostreams
 
 WXCFLAGS = `wx-config --cxxflags`
 WXLFLAGS = `wx-config --libs`
@@ -27,10 +27,10 @@ $(OUT_DIR)/$(BIN): $(addprefix $(OUT_DIR)/, $(OBJ))
 
 clean:
 	rm -f $(OUT_DIR)/*.o *~
-	`test !(-d $(OUT_DIR))` || `rmdir $(OUT_DIR)`
+	@rmdir --ignore-fail-on-non-empty $(OUT_DIR)
 
 prepare:
-	`test -d $(OUT_DIR)` || `mkdir $(OUT_DIR)`
+	@mkdir -p $(OUT_DIR)
 
 
 # Build rules:

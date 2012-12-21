@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        latexpreviewapp.h
+// Name:        app.h
 // Purpose:     
 // Author:      Thomas Gl‰ﬂle
 // Modified by: 
@@ -19,7 +19,7 @@
 
 ////@begin includes
 #include "wx/image.h"
-#include "latexpreviewwindow.h"
+#include "window.h"
 ////@end includes
 
 /*!

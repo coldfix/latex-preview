@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        latexpreviewwindow.h
+// Name:        window.h
 // Purpose:     
 // Author:      Thomas Gl‰ﬂle
 // Modified by: 

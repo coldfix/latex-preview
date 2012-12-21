@@ -232,8 +232,8 @@
           <long name="working-mode">0</long>
           <string name="proxy-Class">"LatexPreviewApp"</string>
           <string name="proxy-Base class">"wxApp"</string>
-          <string name="proxy-Implementation filename">"latexpreviewapp.cpp"</string>
-          <string name="proxy-Header filename">"latexpreviewapp.h"</string>
+          <string name="proxy-Implementation filename">"app.cpp"</string>
+          <string name="proxy-Header filename">"app.h"</string>
           <string name="proxy-Event sources">""</string>
           <string name="proxy-Main window">"ID_LATEXPREVIEWWINDOW"</string>
           <string name="proxy-Help filename">""</string>
@@ -265,8 +265,8 @@
           <long name="proxy-Id value">10000</long>
           <string name="proxy-Class">"LatexPreviewWindow"</string>
           <string name="proxy-Base class">"wxFrame"</string>
-          <string name="proxy-Implementation filename">"latexpreviewwindow.cpp"</string>
-          <string name="proxy-Header filename">"latexpreviewwindow.h"</string>
+          <string name="proxy-Implementation filename">"window.cpp"</string>
+          <string name="proxy-Header filename">"window.h"</string>
           <string name="proxy-XRC filename">""</string>
           <string name="proxy-Title">"LatexPreview"</string>
           <bool name="proxy-Centre">1</bool>

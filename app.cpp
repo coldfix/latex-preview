@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        latexpreviewapp.cpp
+// Name:        app.cpp
 // Purpose:     
 // Author:      Thomas Gl‰ﬂle
 // Modified by: 
@@ -23,7 +23,7 @@
 ////@begin includes
 ////@end includes
 
-#include "latexpreviewapp.h"
+#include "app.h"
 
 ////@begin XPM images
 ////@end XPM images

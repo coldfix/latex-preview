@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        latexpreviewwindow.cpp
+// Name:        window.cpp
 // Purpose:     
 // Author:      Thomas Gl‰ﬂle
 // Modified by: 
@@ -25,7 +25,7 @@
 #include "wximagectrl.h"
 ////@end includes
 
-#include "latexpreviewwindow.h"
+#include "window.h"
 
 ////@begin XPM images
 ////@end XPM images
@@ -760,8 +760,8 @@ bool LatexPreviewWindow::BuildDvi(
     );
 
     string_sink out, err;
-    bio::copy(p_out.source(), out);
-    bio::copy(p_err.source(), err);
+    // bio::copy(p_out.source(), out);
+    // bio::copy(p_err.source(), err);
 
 	info.cmd = to_wx("latex");
 	info.out = to_wx(out.get()); 
@@ -811,8 +811,8 @@ bool LatexPreviewWindow::BuildImg(
     );
 
     string_sink out, err;
-    bio::copy(p_out.source(), out);
-    bio::copy(p_err.source(), err);
+    // bio::copy(p_out.source(), out);
+    // bio::copy(p_err.source(), err);
 
 	info.cmd = to_wx("dvipng");
 	info.out = to_wx(out.get()); 

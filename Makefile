@@ -4,7 +4,7 @@
 #
 
 BIN = latexpreview
-OBJ = latexpreviewwindow.o latexpreviewapp.o
+OBJ = window.o app.o
 
 CC = g++
 OUT_DIR = release

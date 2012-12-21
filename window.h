@@ -39,7 +39,7 @@ class wxWindow;
 #define SYMBOL_LATEXPREVIEWWINDOW_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
 #define SYMBOL_LATEXPREVIEWWINDOW_TITLE _("LatexPreview")
 #define SYMBOL_LATEXPREVIEWWINDOW_IDNAME ID_LATEXPREVIEWWINDOW
-#define SYMBOL_LATEXPREVIEWWINDOW_SIZE wxSize(450, 350)
+#define SYMBOL_LATEXPREVIEWWINDOW_SIZE wxSize(400, 300)
 #define SYMBOL_LATEXPREVIEWWINDOW_POSITION wxDefaultPosition
 ////@end control identifiers
 
@@ -167,6 +167,9 @@ public:
     /// wxEVT_COMMAND_MENU_SELECTED event handler for wxID_DEFAULT_TPL
     void OnDefaultTplClick( wxCommandEvent& event );
 
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for wxID_SAVE_TEX
+    void OnSaveTexClick( wxCommandEvent& event );
+
     /// wxEVT_COMMAND_MENU_SELECTED event handler for wxID_SAVEAS
     void OnSaveasClick( wxCommandEvent& event );
 
@@ -196,6 +199,9 @@ public:
 
     /// wxEVT_COMMAND_MENU_SELECTED event handler for wxID_EXIT
     void OnExitClick( wxCommandEvent& event );
+
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for wxID_ABOUT
+    void OnAboutClick( wxCommandEvent& event );
 
     /// wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED event handler for ID_NOTEBOOK
     void OnNotebookPageChanged( wxNotebookEvent& event );
@@ -231,11 +237,11 @@ public:
     int GetFiletype() const { return m_filetype ; }
     void SetFiletype(int value) { m_filetype = value ; }
 
-    bool GetTransparent() const { return m_transparent ; }
-    void SetTransparent(bool value) { m_transparent = value ; }
-
     wxString GetTemplate() const { return m_template ; }
     void SetTemplate(wxString value) { m_template = value ; }
+
+    bool GetTransparent() const { return m_transparent ; }
+    void SetTransparent(bool value) { m_transparent = value ; }
 
     /// Retrieves bitmap resources
     wxBitmap GetBitmapResource( const wxString& name );
@@ -260,8 +266,8 @@ public:
     wxTextCtrl* m_control_log;
     bool m_autorender;
     int m_filetype;
-    bool m_transparent;
     wxString m_template;
+    bool m_transparent;
     /// Control identifiers
     enum {
         ID_LATEXPREVIEWWINDOW = 10000,
@@ -270,6 +276,7 @@ public:
         wxID_SAVE_TPL = 10004,
         wxID_REVERT_TO_SAVED_TPL = 10019,
         wxID_DEFAULT_TPL = 10020,
+        wxID_SAVE_TEX = 10023,
         ID_MENU_IMAGE = 10009,
         ID_MENUITEM_FT_PNG = 10006,
         ID_MENUITEM_FT_GIF = 10007,

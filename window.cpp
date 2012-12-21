@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        window.cpp
 // Purpose:     
-// Author:      Thomas Gl��le
+// Author:      Thomas Gläßle
 // Modified by: 
 // Created:     Fri 20 Nov 2009 02:01:08 CET
 // RCS-ID:      
@@ -27,8 +27,12 @@
 
 #include "window.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wwrite-strings"
 ////@begin XPM images
+#include "icon1.xpm"
 ////@end XPM images
+#pragma GCC diagnostic pop
 
 
 #include <wx/wfstream.h>		// wxFileOutputStream
@@ -52,6 +56,8 @@
 #include <boost/iostreams/copy.hpp> 
 #include <boost/assign/list_inserter.hpp>   // for 'push_back()'
 
+#include "aboutbox.h"
+
 
 namespace bp =  boost::process;
 namespace bpi = boost::process::initializers;
@@ -59,6 +65,21 @@ namespace bfs = boost::filesystem;
 namespace bio = boost::iostreams;
 namespace bas = boost::assign;
 
+
+/*
+ * TODO: put this stuff in proper headers
+ */
+
+	/* to do: put into header */
+	inline wxString to_wx(const std::string& stdstr)
+	{
+		return wxString(stdstr.c_str(), wxConvUTF8);
+	}
+
+	inline std::string to_std(const wxString& wxstr)
+	{
+		return std::string(wxstr.mb_str(wxConvUTF8));
+	}
 
 class string_sink
 {
@@ -80,19 +101,43 @@ public:
 };
 
 
+
+
+bool execute(
+        const std::vector<std::string>& args,
+        execution_info& info)
+{
+    bp::pipe out_pipe(bp::create_pipe()),
+             err_pipe(bp::create_pipe());
+    {
+        bio::file_descriptor_sink out_sink(out_pipe.sink, bio::close_handle),
+                                  err_sink(err_pipe.sink, bio::close_handle);
+        bp::child c = bp::execute(
+            bpi::set_args(args),
+            bpi::bind_stdout(out_sink),
+            bpi::bind_stderr(err_sink),
+            bpi::close_stdin()
+        );
+        info.exitcode = bp::wait_for_exit(c);
+    }
+
+    bio::file_descriptor_source out_source(out_pipe.source, bio::close_handle),
+                                err_source(err_pipe.source, bio::close_handle);
+    string_sink out, err;
+    bio::copy(out_source, out);
+    bio::copy(err_source, err);
+
+	info.cmd = to_wx(args[0]);
+	info.out = to_wx(out.get()); 
+	info.err = to_wx(err.get()); 
+
+	return info.exitcode == 0;
+}
+
+
 wxString insert_marker = wxT("<!-- ... -->");
 
 
-	/* to do: put into header */
-	inline wxString to_wx(const std::string& stdstr)
-	{
-		return wxString(stdstr.c_str(), wxConvFile);
-	}
-
-	inline std::string to_std(const wxString& wxstr)
-	{
-		return std::string(wxstr.mb_str(wxConvFile));
-	}
 
 	class ChangeCwd
 	{
@@ -164,53 +209,33 @@ BEGIN_EVENT_TABLE( LatexPreviewWindow, wxFrame )
 
 ////@begin LatexPreviewWindow event table entries
     EVT_CLOSE( LatexPreviewWindow::OnCloseWindow )
-
     EVT_MENU( wxID_SAVE, LatexPreviewWindow::OnSaveClick )
-
     EVT_MENU( wxID_REVERT_TO_SAVED, LatexPreviewWindow::OnRevertToSavedClick )
-
     EVT_MENU( wxID_DEFAULT, LatexPreviewWindow::OnDefaultClick )
-
     EVT_MENU( wxID_OPEN, LatexPreviewWindow::OnOpenClick )
-
     EVT_MENU( wxID_SAVE_TPL, LatexPreviewWindow::OnSaveTplClick )
-
     EVT_MENU( wxID_REVERT_TO_SAVED_TPL, LatexPreviewWindow::OnRevertToSavedTplClick )
-
     EVT_MENU( wxID_DEFAULT_TPL, LatexPreviewWindow::OnDefaultTplClick )
-
+    EVT_MENU( wxID_SAVE_TEX, LatexPreviewWindow::OnSaveTexClick )
     EVT_MENU( wxID_SAVEAS, LatexPreviewWindow::OnSaveasClick )
-
     EVT_MENU( ID_MENUITEM_FT_PNG, LatexPreviewWindow::OnMenuitemFtPngClick )
     EVT_UPDATE_UI( ID_MENUITEM_FT_PNG, LatexPreviewWindow::OnMenuitemFtPngUpdate )
-
     EVT_MENU( ID_MENUITEM_FT_GIF, LatexPreviewWindow::OnMenuitemFtGifClick )
     EVT_UPDATE_UI( ID_MENUITEM_FT_GIF, LatexPreviewWindow::OnMenuitemFtGifUpdate )
-
     EVT_MENU( ID_MENUITEM_BG_TRANSPARENT, LatexPreviewWindow::OnMenuitemBgTransparentClick )
     EVT_UPDATE_UI( ID_MENUITEM_BG_TRANSPARENT, LatexPreviewWindow::OnMenuitemBgTransparentUpdate )
-
     EVT_MENU( ID_MENUITEM_AUTORENDER, LatexPreviewWindow::OnMenuitemAutorenderClick )
     EVT_UPDATE_UI( ID_MENUITEM_AUTORENDER, LatexPreviewWindow::OnMenuitemAutorenderUpdate )
-
     EVT_MENU( wxID_EXIT, LatexPreviewWindow::OnExitClick )
-
+    EVT_MENU( wxID_ABOUT, LatexPreviewWindow::OnAboutClick )
     EVT_NOTEBOOK_PAGE_CHANGED( ID_NOTEBOOK, LatexPreviewWindow::OnNotebookPageChanged )
-
     EVT_TEXT( ID_TEXTCTRL_INPUT, LatexPreviewWindow::OnTextctrlInputTextUpdated )
-
     EVT_BUTTON( wxID_SAVE, LatexPreviewWindow::OnSaveClick )
-
     EVT_BUTTON( wxID_REFRESH, LatexPreviewWindow::OnRefreshClick )
-
     EVT_BUTTON( wxID_CLOSE, LatexPreviewWindow::OnCloseClick )
-
     EVT_TEXT( ID_TEXTCTRL_TEMPLATE, LatexPreviewWindow::OnTextctrlTemplateTextUpdated )
-
     EVT_BUTTON( wxID_SAVE_TPL, LatexPreviewWindow::OnSaveTplClick )
-
     EVT_BUTTON( wxID_REVERT_TO_SAVED_TPL, LatexPreviewWindow::OnRevertToSavedTplClick )
-
 ////@end LatexPreviewWindow event table entries
 
 END_EVENT_TABLE()
@@ -242,6 +267,7 @@ bool LatexPreviewWindow::Create(wxWindow* parent, wxWindowID id, const wxString&
     wxFrame::Create( parent, id, caption, pos, size, style );
 
     CreateControls();
+    SetIcon(GetIconResource(wxT("icon1.xpm")));
     if (GetSizer())
     {
         GetSizer()->SetSizeHints(this);
@@ -305,7 +331,7 @@ void LatexPreviewWindow::Init()
 ////@begin LatexPreviewWindow member initialisation
     m_autorender = false;
     m_filetype = filetype::png;
-    m_transparent = true;
+    m_transparent = false;
     m_notebook = NULL;
     m_panel_formula = NULL;
     m_control_input = NULL;
@@ -344,108 +370,113 @@ void LatexPreviewWindow::CreateControls()
     itemMenu9->AppendSeparator();
     itemMenu9->Append(wxID_DEFAULT_TPL, _("&Default"), wxEmptyString, wxITEM_NORMAL);
     itemMenu3->Append(ID_MENU_TEMPLATE, _("&Template"), itemMenu9);
+    itemMenu3->Append(wxID_SAVE_TEX, _("Save Te&X file..."), wxEmptyString, wxITEM_NORMAL);
     itemMenu3->AppendSeparator();
-    wxMenu* itemMenu17 = new wxMenu;
-    itemMenu17->Append(wxID_SAVEAS, _("Save &as"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu17->AppendSeparator();
-    itemMenu17->Append(ID_MENUITEM_FT_PNG, _(".&png"), wxEmptyString, wxITEM_RADIO);
-    itemMenu17->Append(ID_MENUITEM_FT_GIF, _(".&gif"), wxEmptyString, wxITEM_RADIO);
-    itemMenu17->AppendSeparator();
-    itemMenu17->Append(ID_MENUITEM_BG_TRANSPARENT, _("&Transparent"), wxEmptyString, wxITEM_CHECK);
-    itemMenu3->Append(ID_MENU_IMAGE, _("&Image"), itemMenu17);
+    wxMenu* itemMenu18 = new wxMenu;
+    itemMenu18->Append(wxID_SAVEAS, _("Save &as"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu18->AppendSeparator();
+    itemMenu18->Append(ID_MENUITEM_FT_PNG, _(".&png"), wxEmptyString, wxITEM_RADIO);
+    itemMenu18->Append(ID_MENUITEM_FT_GIF, _(".&gif"), wxEmptyString, wxITEM_RADIO);
+    itemMenu18->AppendSeparator();
+    itemMenu18->Append(ID_MENUITEM_BG_TRANSPARENT, _("&Transparent"), wxEmptyString, wxITEM_CHECK);
+    itemMenu3->Append(ID_MENU_IMAGE, _("&Image"), itemMenu18);
     itemMenu3->Append(ID_MENUITEM_AUTORENDER, _("Auto refresh"), wxEmptyString, wxITEM_CHECK);
     itemMenu3->AppendSeparator();
     itemMenu3->Append(wxID_EXIT, _("&Exit"), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(itemMenu3, _("&File"));
+    wxMenu* itemMenu28 = new wxMenu;
+    itemMenu28->Append(wxID_ABOUT, _("&About"), wxEmptyString, wxITEM_NORMAL);
+    menuBar->Append(itemMenu28, _("?"));
     itemFrame1->SetMenuBar(menuBar);
 
-    wxBoxSizer* itemBoxSizer27 = new wxBoxSizer(wxHORIZONTAL);
-    itemFrame1->SetSizer(itemBoxSizer27);
+    wxBoxSizer* itemBoxSizer30 = new wxBoxSizer(wxHORIZONTAL);
+    itemFrame1->SetSizer(itemBoxSizer30);
 
-    wxPanel* itemPanel28 = new wxPanel( itemFrame1, ID_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-    itemBoxSizer27->Add(itemPanel28, 1, wxGROW, 5);
+    wxPanel* itemPanel31 = new wxPanel( itemFrame1, ID_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    itemBoxSizer30->Add(itemPanel31, 1, wxGROW, 5);
 
-    wxBoxSizer* itemBoxSizer29 = new wxBoxSizer(wxHORIZONTAL);
-    itemPanel28->SetSizer(itemBoxSizer29);
+    wxBoxSizer* itemBoxSizer32 = new wxBoxSizer(wxHORIZONTAL);
+    itemPanel31->SetSizer(itemBoxSizer32);
 
-    m_notebook = new wxNotebook( itemPanel28, ID_NOTEBOOK, wxDefaultPosition, wxDefaultSize, wxBK_TOP );
+    m_notebook = new wxNotebook( itemPanel31, ID_NOTEBOOK, wxDefaultPosition, wxDefaultSize, wxBK_TOP );
 
     m_panel_formula = new wxPanel( m_notebook, ID_PANEL_PREVIEW, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-    wxBoxSizer* itemBoxSizer32 = new wxBoxSizer(wxVERTICAL);
-    m_panel_formula->SetSizer(itemBoxSizer32);
+    wxBoxSizer* itemBoxSizer35 = new wxBoxSizer(wxVERTICAL);
+    m_panel_formula->SetSizer(itemBoxSizer35);
 
     m_control_input = new wxTextCtrl( m_panel_formula, ID_TEXTCTRL_INPUT, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE );
-    itemBoxSizer32->Add(m_control_input, 1, wxGROW|wxALL, 5);
+    itemBoxSizer35->Add(m_control_input, 1, wxGROW|wxALL, 5);
 
     m_panel_image = new wxPanel( m_panel_formula, ID_PANEL1, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
-    itemBoxSizer32->Add(m_panel_image, 0, wxGROW|wxALL, 5);
-    wxBoxSizer* itemBoxSizer35 = new wxBoxSizer(wxVERTICAL);
-    m_panel_image->SetSizer(itemBoxSizer35);
+    itemBoxSizer35->Add(m_panel_image, 0, wxGROW|wxALL, 5);
+    wxBoxSizer* itemBoxSizer38 = new wxBoxSizer(wxVERTICAL);
+    m_panel_image->SetSizer(itemBoxSizer38);
 
     m_control_image = new wxWindow( m_panel_image, ID_FOREIGN_IMAGE_PREVIEW, wxDefaultPosition, wxSize(180, 50), wxRAISED_BORDER|wxFULL_REPAINT_ON_RESIZE );
-    itemBoxSizer35->Add(m_control_image, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    itemBoxSizer38->Add(m_control_image, 0, wxALIGN_CENTER_HORIZONTAL, 5);
 
-    wxBoxSizer* itemBoxSizer37 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer32->Add(itemBoxSizer37, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
-    wxButton* itemButton38 = new wxButton( m_panel_formula, wxID_SAVE, _("&Save"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer37->Add(itemButton38, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxBoxSizer* itemBoxSizer40 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer35->Add(itemBoxSizer40, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxButton* itemButton41 = new wxButton( m_panel_formula, wxID_SAVE, _("&Save"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer40->Add(itemButton41, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton39 = new wxButton( m_panel_formula, wxID_REFRESH, _("Refresh"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer37->Add(itemButton39, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton42 = new wxButton( m_panel_formula, wxID_REFRESH, _("Refresh"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer40->Add(itemButton42, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton40 = new wxButton( m_panel_formula, wxID_CLOSE, _("&Close"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer37->Add(itemButton40, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton43 = new wxButton( m_panel_formula, wxID_CLOSE, _("&Close"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer40->Add(itemButton43, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     m_notebook->AddPage(m_panel_formula, _("Formula"));
 
-    wxPanel* itemPanel41 = new wxPanel( m_notebook, ID_PANEL_TEMPLATE, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-    wxBoxSizer* itemBoxSizer42 = new wxBoxSizer(wxVERTICAL);
-    itemPanel41->SetSizer(itemBoxSizer42);
+    wxPanel* itemPanel44 = new wxPanel( m_notebook, ID_PANEL_TEMPLATE, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxBoxSizer* itemBoxSizer45 = new wxBoxSizer(wxVERTICAL);
+    itemPanel44->SetSizer(itemBoxSizer45);
 
-    m_control_template = new wxTextCtrl( itemPanel41, ID_TEXTCTRL_TEMPLATE, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE );
-    itemBoxSizer42->Add(m_control_template, 1, wxGROW|wxALL, 5);
+    m_control_template = new wxTextCtrl( itemPanel44, ID_TEXTCTRL_TEMPLATE, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE );
+    itemBoxSizer45->Add(m_control_template, 1, wxGROW|wxALL, 5);
 
-    wxBoxSizer* itemBoxSizer44 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer42->Add(itemBoxSizer44, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
-    wxButton* itemButton45 = new wxButton( itemPanel41, wxID_SAVE_TPL, _("&Save"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer44->Add(itemButton45, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxBoxSizer* itemBoxSizer47 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer45->Add(itemBoxSizer47, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxButton* itemButton48 = new wxButton( itemPanel44, wxID_SAVE_TPL, _("&Save"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer47->Add(itemButton48, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton46 = new wxButton( itemPanel41, wxID_REVERT_TO_SAVED_TPL, _("&Revert"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer44->Add(itemButton46, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton49 = new wxButton( itemPanel44, wxID_REVERT_TO_SAVED_TPL, _("&Revert"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer47->Add(itemButton49, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton47 = new wxButton( itemPanel41, wxID_CLOSE, _("&Close"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer44->Add(itemButton47, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton50 = new wxButton( itemPanel44, wxID_CLOSE, _("&Close"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer47->Add(itemButton50, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    m_notebook->AddPage(itemPanel41, _("Template"));
+    m_notebook->AddPage(itemPanel44, _("Template"));
 
     m_panel_log = new wxPanel( m_notebook, ID_PANEL_LOG, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-    wxBoxSizer* itemBoxSizer49 = new wxBoxSizer(wxVERTICAL);
-    m_panel_log->SetSizer(itemBoxSizer49);
+    wxBoxSizer* itemBoxSizer52 = new wxBoxSizer(wxVERTICAL);
+    m_panel_log->SetSizer(itemBoxSizer52);
 
-    wxFlexGridSizer* itemFlexGridSizer50 = new wxFlexGridSizer(0, 4, 0, 0);
-    itemFlexGridSizer50->AddGrowableCol(1);
-    itemBoxSizer49->Add(itemFlexGridSizer50, 0, wxGROW|wxALL, 5);
-    wxStaticText* itemStaticText51 = new wxStaticText( m_panel_log, wxID_STATIC, _("Operation:"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemFlexGridSizer50->Add(itemStaticText51, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxFlexGridSizer* itemFlexGridSizer53 = new wxFlexGridSizer(0, 4, 0, 0);
+    itemBoxSizer52->Add(itemFlexGridSizer53, 0, wxGROW|wxALL, 5);
+    wxStaticText* itemStaticText54 = new wxStaticText( m_panel_log, wxID_STATIC, _("Operation:"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemFlexGridSizer53->Add(itemStaticText54, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     m_control_log_operation = new wxTextCtrl( m_panel_log, ID_TEXTCTRL_LOG_OPERATION, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY );
-    itemFlexGridSizer50->Add(m_control_log_operation, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemFlexGridSizer53->Add(m_control_log_operation, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxStaticText* itemStaticText53 = new wxStaticText( m_panel_log, wxID_STATIC, _("Exit code:"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemFlexGridSizer50->Add(itemStaticText53, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxStaticText* itemStaticText56 = new wxStaticText( m_panel_log, wxID_STATIC, _("Exit code:"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemFlexGridSizer53->Add(itemStaticText56, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     m_control_log_exitcode = new wxTextCtrl( m_panel_log, ID_TEXTCTRL_LOG_EXITCODE, wxEmptyString, wxDefaultPosition, wxSize(40, -1), wxTE_READONLY );
-    itemFlexGridSizer50->Add(m_control_log_exitcode, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemFlexGridSizer53->Add(m_control_log_exitcode, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxStaticBox* itemStaticBoxSizer55Static = new wxStaticBox(m_panel_log, wxID_ANY, _("Standard output"));
-    wxStaticBoxSizer* itemStaticBoxSizer55 = new wxStaticBoxSizer(itemStaticBoxSizer55Static, wxHORIZONTAL);
-    itemBoxSizer49->Add(itemStaticBoxSizer55, 1, wxGROW|wxALL, 5);
+    itemFlexGridSizer53->AddGrowableCol(1);
+
+    wxStaticBox* itemStaticBoxSizer58Static = new wxStaticBox(m_panel_log, wxID_ANY, _("Standard output"));
+    wxStaticBoxSizer* itemStaticBoxSizer58 = new wxStaticBoxSizer(itemStaticBoxSizer58Static, wxHORIZONTAL);
+    itemBoxSizer52->Add(itemStaticBoxSizer58, 1, wxGROW|wxALL, 5);
     m_control_log = new wxTextCtrl( m_panel_log, ID_TEXTCTRL_LOG, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY );
-    itemStaticBoxSizer55->Add(m_control_log, 1, wxGROW|wxALL, 5);
+    itemStaticBoxSizer58->Add(m_control_log, 1, wxGROW|wxALL, 5);
 
     m_notebook->AddPage(m_panel_log, _("Log"));
 
-    itemBoxSizer29->Add(m_notebook, 1, wxGROW, 5);
+    itemBoxSizer32->Add(m_notebook, 1, wxGROW, 5);
 
     // Connect events and objects
     m_control_image->Connect(ID_FOREIGN_IMAGE_PREVIEW, wxEVT_SIZE, wxSizeEventHandler(LatexPreviewWindow::OnSize), NULL, this);
@@ -488,6 +519,11 @@ wxIcon LatexPreviewWindow::GetIconResource( const wxString& name )
     // Icon retrieval
 ////@begin LatexPreviewWindow icon retrieval
     wxUnusedVar(name);
+    if (name == _T("icon1.xpm"))
+    {
+        wxIcon icon(icon1);
+        return icon;
+    }
     return wxNullIcon;
 ////@end LatexPreviewWindow icon retrieval
 }
@@ -713,37 +749,6 @@ bool LatexPreviewWindow::BuildTex(
 	return true;
 }
 
-
-bool execute(
-        const std::vector<std::string>& args,
-        execution_info& info)
-{
-    bp::pipe out_pipe(bp::create_pipe()),
-             err_pipe(bp::create_pipe());
-    {
-        bio::file_descriptor_sink out_sink(out_pipe.sink, bio::close_handle),
-                                  err_sink(err_pipe.sink, bio::close_handle);
-        bp::child c = bp::execute(
-            bpi::set_args(args),
-            bpi::bind_stdout(out_sink),
-            bpi::bind_stderr(err_sink),
-            bpi::close_stdin()
-        );
-        info.exitcode = bp::wait_for_exit(c);
-    }
-
-    bio::file_descriptor_source out_source(out_pipe.source, bio::close_handle),
-                                err_source(err_pipe.source, bio::close_handle);
-    string_sink out, err;
-    bio::copy(out_source, out);
-    bio::copy(err_source, err);
-
-	info.cmd = to_wx(args[0]);
-	info.out = to_wx(out.get()); 
-	info.err = to_wx(err.get()); 
-
-	return info.exitcode == 0;
-}
 
 
 bool LatexPreviewWindow::BuildDvi(
@@ -1156,5 +1161,49 @@ void LatexPreviewWindow::OnPaint( wxPaintEvent& event )
 			(dc.GetSize().x - m_img.GetWidth() + 1) / 2,
 			(dc.GetSize().y - m_img.GetHeight() + 1) / 2,
 			true );
+}
+
+
+/*
+ * wxEVT_COMMAND_MENU_SELECTED event handler for wxID_ABOUT
+ */
+
+void LatexPreviewWindow::OnAboutClick( wxCommandEvent& event )
+{
+	wxtk::AboutBox about(this);
+	about.SetDescription( to_wx("Clever text describing the application. Not.") );
+	about.SetBigIcon( GetIconResource(wxT("icon1.xpm")) );
+	about.SetAppname( to_wx("wxLatexPreview\nVersion 1.2") );
+	about.SetTitle( to_wx("About wxLatexPreview") );
+	about.SetCopyright( to_wx("(C) 2010-2012 Thomas Gläßle") );
+	about.ShowModal();
+}
+
+
+/*
+ * wxEVT_COMMAND_MENU_SELECTED event handler for wxID_SAVE_TEX
+ */
+
+void LatexPreviewWindow::OnSaveTexClick( wxCommandEvent& event )
+{
+    wxFileName name = m_filename;
+	wxString basename = name.GetPath() + wxT("/") + name.GetName();
+	wxString file_tex = basename + wxT(".tex");
+
+	wxFileDialog dlg( this,
+			wxT("Save TeX file to.."),
+			wxT(""),
+			wxFileName(m_filename_img).GetFullName(),
+			wxT("*"),
+			wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
+
+	if (dlg.ShowModal() == wxID_OK) {
+        execution_info info;
+		BuildTex(
+            m_control_input->GetValue(),
+			m_control_template->GetValue(),
+            dlg.GetPath(),
+            info);
+    }
 }
 

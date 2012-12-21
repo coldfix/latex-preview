@@ -4,7 +4,7 @@
 #
 
 BIN = latexpreview
-OBJ = window.o app.o
+OBJ = window.o app.o aboutbox.o
 
 CC = g++
 OUT_DIR = bin

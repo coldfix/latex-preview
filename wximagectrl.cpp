@@ -162,6 +162,8 @@ void wxImageCtrl::SetImage(const wxBitmap& bmp)
 
 wxSize wxImageCtrl::DoGetBestSize() const
 {
+	if (!m_img.IsOk())
+		return wxSize(40, 20);
 	return wxSize(
 			m_img.GetWidth() + 40,
 			m_img.GetHeight() + 20);
@@ -190,6 +192,9 @@ void wxImageCtrl::OnPaint( wxPaintEvent& event )
 
 	// dc.SetBackground(*wxWHITE_BRUSH);
 	// dc.Clear();
+	if (!m_img.IsOk()) {
+		return;
+	}
 
 	dc.DrawBitmap( m_img,
 			(dc.GetSize().x - m_img.GetWidth() + 1) / 2,

@@ -802,8 +802,15 @@ void LatexPreviewWindow::SetImage(const wxBitmap& img)
 {
 	Freeze();
 
-	wxSize increase( img.GetWidth() - m_img.GetWidth(),
-					img.GetHeight() - m_img.GetHeight()),
+	int old_width = 0,
+		old_height = 0;
+	if (m_img.IsOk()) {
+		old_width = m_img.GetWidth();
+		old_height = m_img.GetHeight();
+	}
+
+	wxSize increase(img.GetWidth() - old_width,
+					img.GetHeight() - old_height),
 		   frame_size( GetSize() ),
 		   new_img_size(img.GetWidth() + 40, img.GetHeight() + 40);
 	m_img = img;

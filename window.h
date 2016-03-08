@@ -78,7 +78,7 @@ struct ConfigData
 
 class LatexPreviewWindow: public wxFrame
 {    
-    DECLARE_CLASS( LatexPreviewWindow )
+    DECLARE_DYNAMIC_CLASS( LatexPreviewWindow )
     DECLARE_EVENT_TABLE()
 
 

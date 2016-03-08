@@ -1,12 +1,12 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        app.h
-// Purpose:     
-// Author:      Thomas Gl‰ﬂle
-// Modified by: 
+// Purpose:
+// Author:      Thomas Gl√§√üle
+// Modified by:
 // Created:     Fri 20 Nov 2009 02:00:32 CET
-// RCS-ID:      
-// Copyright:   
-// Licence:     
+// RCS-ID:
+// Copyright:
+// Licence:
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _LATEXPREVIEWAPP_H_
@@ -41,7 +41,7 @@
  */
 
 class LatexPreviewApp: public wxApp
-{    
+{
     DECLARE_CLASS( LatexPreviewApp )
     DECLARE_EVENT_TABLE()
 
@@ -70,7 +70,7 @@ public:
 };
 
 /*!
- * Application instance declaration 
+ * Application instance declaration
  */
 
 ////@begin declare app

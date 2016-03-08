@@ -1,12 +1,12 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        app.cpp
-// Purpose:     
-// Author:      Thomas Gläßle
-// Modified by: 
+// Purpose:
+// Author:      Thomas GlÃ¤ÃŸle
+// Modified by:
 // Created:     Fri 20 Nov 2009 02:00:32 CET
-// RCS-ID:      
-// Copyright:   
-// Licence:     
+// RCS-ID:
+// Copyright:
+// Licence:
 /////////////////////////////////////////////////////////////////////////////
 
 // For compilers that support precompilation, includes "wx/wx.h".
@@ -82,25 +82,25 @@ void LatexPreviewApp::Init()
  */
 
 bool LatexPreviewApp::OnInit()
-{    
+{
 ////@begin LatexPreviewApp initialisation
-	// Remove the comment markers above and below this block
-	// to make permanent changes to the code.
+    // Remove the comment markers above and below this block
+    // to make permanent changes to the code.
 
 #if wxUSE_XPM
-	wxImage::AddHandler(new wxXPMHandler);
+    wxImage::AddHandler(new wxXPMHandler);
 #endif
 #if wxUSE_LIBPNG
-	wxImage::AddHandler(new wxPNGHandler);
+    wxImage::AddHandler(new wxPNGHandler);
 #endif
 #if wxUSE_LIBJPEG
-	wxImage::AddHandler(new wxJPEGHandler);
+    wxImage::AddHandler(new wxJPEGHandler);
 #endif
 #if wxUSE_GIF
-	wxImage::AddHandler(new wxGIFHandler);
+    wxImage::AddHandler(new wxGIFHandler);
 #endif
-	LatexPreviewWindow* mainWindow = new LatexPreviewWindow( NULL );
-	mainWindow->Show(true);
+    LatexPreviewWindow* mainWindow = new LatexPreviewWindow( NULL );
+    mainWindow->Show(true);
 ////@end LatexPreviewApp initialisation
 
     return true;
@@ -112,9 +112,9 @@ bool LatexPreviewApp::OnInit()
  */
 
 int LatexPreviewApp::OnExit()
-{    
+{
 ////@begin LatexPreviewApp cleanup
-	return wxApp::OnExit();
+    return wxApp::OnExit();
 ////@end LatexPreviewApp cleanup
 }
 

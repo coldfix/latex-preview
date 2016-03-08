@@ -1,12 +1,12 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        wximagectrl.h
-// Purpose:     
-// Author:      Thomas Gl‰ﬂle
-// Modified by: 
+// Purpose:
+// Author:      Thomas Gl√§√üle
+// Modified by:
 // Created:     Thu 26 Nov 2009 18:25:10 CET
-// RCS-ID:      
-// Copyright:   
-// Licence:     
+// RCS-ID:
+// Copyright:
+// Licence:
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _WXIMAGECTRL_H_
@@ -45,7 +45,7 @@ class wxImageCtrl;
  */
 
 class wxImageCtrl: public wxControl
-{    
+{
     DECLARE_DYNAMIC_CLASS( wxImageCtrl )
     DECLARE_EVENT_TABLE()
 
@@ -66,8 +66,8 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-	void SetImage(const wxBitmap& bmp);
-	wxSize DoGetBestSize() const;
+    void SetImage(const wxBitmap& bmp);
+    wxSize DoGetBestSize() const;
 
 
 ////@begin wxImageCtrl event handler declarations
@@ -99,7 +99,7 @@ public:
     };
 ////@end wxImageCtrl member variables
 
-	wxBitmap m_img;
+    wxBitmap m_img;
 };
 
 #endif

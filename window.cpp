@@ -1,12 +1,12 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        window.cpp
-// Purpose:     
+// Purpose:
 // Author:      Thomas Gläßle
-// Modified by: 
+// Modified by:
 // Created:     Fri 20 Nov 2009 02:01:08 CET
-// RCS-ID:      
-// Copyright:   
-// Licence:     
+// RCS-ID:
+// Copyright:
+// Licence:
 /////////////////////////////////////////////////////////////////////////////
 
 // For compilers that support precompilation, includes "wx/wx.h".
@@ -35,16 +35,16 @@
 #pragma GCC diagnostic pop
 
 
-#include <wx/wfstream.h>		// wxFileOutputStream
-#include <wx/txtstrm.h>			// wxTextOutputStream
-#include <wx/bitmap.h>			// wxBitmap
-#include <wx/dcbuffer.h>		// wxAutoBufferedPaintDC
-#include <wx/filename.h>		// wxFileName
-#include <wx/stdpaths.h>		// wxStandardPaths
-#include <wx/filedlg.h>			// wxFileDialog
-#include <wx/dataobj.h>			// wxFileDataObject
-#include <wx/dnd.h>				// wxDropSource
-#include <wx/fileconf.h>		// wxFileConfig
+#include <wx/wfstream.h>        // wxFileOutputStream
+#include <wx/txtstrm.h>         // wxTextOutputStream
+#include <wx/bitmap.h>          // wxBitmap
+#include <wx/dcbuffer.h>        // wxAutoBufferedPaintDC
+#include <wx/filename.h>        // wxFileName
+#include <wx/stdpaths.h>        // wxStandardPaths
+#include <wx/filedlg.h>         // wxFileDialog
+#include <wx/dataobj.h>         // wxFileDataObject
+#include <wx/dnd.h>             // wxDropSource
+#include <wx/fileconf.h>        // wxFileConfig
 
 
 #include <string>
@@ -53,7 +53,7 @@
 
 #include <iosfwd>                           // streamsize
 #include <boost/iostreams/categories.hpp>   // sink_tag
-#include <boost/iostreams/copy.hpp> 
+#include <boost/iostreams/copy.hpp>
 #include <boost/assign/list_inserter.hpp>   // for 'push_back()'
 
 #include "aboutbox.h"
@@ -70,16 +70,16 @@ namespace bas = boost::assign;
  * TODO: put this stuff in proper headers
  */
 
-	/* to do: put into header */
-	inline wxString to_wx(const std::string& stdstr)
-	{
-		return wxString(stdstr.c_str(), wxConvUTF8);
-	}
+    /* to do: put into header */
+    inline wxString to_wx(const std::string& stdstr)
+    {
+        return wxString(stdstr.c_str(), wxConvUTF8);
+    }
 
-	inline std::string to_std(const wxString& wxstr)
-	{
-		return std::string(wxstr.mb_str(wxConvUTF8));
-	}
+    inline std::string to_std(const wxString& wxstr)
+    {
+        return std::string(wxstr.mb_str(wxConvUTF8));
+    }
 
 class string_sink
 {
@@ -127,11 +127,11 @@ bool execute(
     bio::copy(out_source, out);
     bio::copy(err_source, err);
 
-	info.cmd = to_wx(args[0]);
-	info.out = to_wx(out.get()); 
-	info.err = to_wx(err.get()); 
+    info.cmd = to_wx(args[0]);
+    info.out = to_wx(out.get());
+    info.err = to_wx(err.get());
 
-	return info.exitcode == 0;
+    return info.exitcode == 0;
 }
 
 
@@ -139,58 +139,58 @@ wxString insert_marker = wxT("<!-- ... -->");
 
 
 
-	class ChangeCwd
-	{
-		wxString backup_cwd_;
-	public:
-		ChangeCwd(const wxString& cwd)
-		{
-			backup_cwd_ = wxFileName::GetCwd();
-			wxFileName::SetCwd(cwd);
-		}
-		~ChangeCwd()
-		{
-			wxFileName::SetCwd(backup_cwd_);
-		}
-	};
+    class ChangeCwd
+    {
+        wxString backup_cwd_;
+    public:
+        ChangeCwd(const wxString& cwd)
+        {
+            backup_cwd_ = wxFileName::GetCwd();
+            wxFileName::SetCwd(cwd);
+        }
+        ~ChangeCwd()
+        {
+            wxFileName::SetCwd(backup_cwd_);
+        }
+    };
 
-	wxString ReadStream(wxInputStream& stream)
-	{
-		wxTextInputStream txt(stream);
-		wxString str, line;
-		while (!stream.Eof())
-			str += txt.ReadLine() + wxT('\n');
-		return str;
-	}
+    wxString ReadStream(wxInputStream& stream)
+    {
+        wxTextInputStream txt(stream);
+        wxString str, line;
+        while (!stream.Eof())
+            str += txt.ReadLine() + wxT('\n');
+        return str;
+    }
 
-	std::string ReadStream(std::istream& stream)
-	{
-		std::string str, line;
-		while (std::getline(stream, line))
-			str += line + '\n';
-		return str;
-	}
+    std::string ReadStream(std::istream& stream)
+    {
+        std::string str, line;
+        while (std::getline(stream, line))
+            str += line + '\n';
+        return str;
+    }
 
-	bool LoadFile(const wxString& filename, wxString& contents)
-	{
-		if (!wxFileName::IsFileReadable(filename))
-			return false;
-		wxFileInputStream file(filename);
-		if (!file.IsOk())
-			return false;
-		contents = ReadStream(file);
-		return true;
-	}
+    bool LoadFile(const wxString& filename, wxString& contents)
+    {
+        if (!wxFileName::IsFileReadable(filename))
+            return false;
+        wxFileInputStream file(filename);
+        if (!file.IsOk())
+            return false;
+        contents = ReadStream(file);
+        return true;
+    }
 
-	bool SaveFile(const wxString& filename, const wxString& contents)
-	{
-		wxFileOutputStream file(filename);
-		if (!file.IsOk())
-			return false;
-		wxTextOutputStream fout(file);
-		fout << contents;
-		return true;
-	}
+    bool SaveFile(const wxString& filename, const wxString& contents)
+    {
+        wxFileOutputStream file(filename);
+        if (!file.IsOk())
+            return false;
+        wxTextOutputStream fout(file);
+        fout << contents;
+        return true;
+    }
 
 
 
@@ -275,30 +275,30 @@ bool LatexPreviewWindow::Create(wxWindow* parent, wxWindowID id, const wxString&
     Centre();
 ////@end LatexPreviewWindow creation
 
-	ConfigData data;
-	LoadConfig(data);
+    ConfigData data;
+    LoadConfig(data);
 
-	if (data.file_type == filetype::gif)
-		m_filetype = filetype::gif;
-	else
-		m_filetype = filetype::png;
-	m_transparent = data.transparent;
-	m_autorender = data.autorender;
+    if (data.file_type == filetype::gif)
+        m_filetype = filetype::gif;
+    else
+        m_filetype = filetype::png;
+    m_transparent = data.transparent;
+    m_autorender = data.autorender;
 
-	m_control_template->ChangeValue(data.texplate);
+    m_control_template->ChangeValue(data.texplate);
 
-	m_control_input->SetFocus();
-	m_control_input->ChangeValue(data.textro);
+    m_control_input->SetFocus();
+    m_control_input->ChangeValue(data.textro);
 
-	if (data.select_start < 0)
-		data.select_start = std::max(0, (int) m_control_input->GetLastPosition() + data.select_start);
-	if (data.select_end < 0)
-		data.select_end = std::max(data.select_start, (int) m_control_input->GetLastPosition() + data.select_end);
-	m_control_input->SetSelection(data.select_start, data.select_end);
+    if (data.select_start < 0)
+        data.select_start = std::max(0, (int) m_control_input->GetLastPosition() + data.select_start);
+    if (data.select_end < 0)
+        data.select_end = std::max(data.select_start, (int) m_control_input->GetLastPosition() + data.select_end);
+    m_control_input->SetSelection(data.select_start, data.select_end);
 
-	SetSize(data.width, data.height);
-	Rebuild();
-	m_resize_frame = true;
+    SetSize(data.width, data.height);
+    Rebuild();
+    m_resize_frame = true;
 
     return true;
 }
@@ -321,12 +321,12 @@ LatexPreviewWindow::~LatexPreviewWindow()
 
 void LatexPreviewWindow::Init()
 {
-	m_make_filename = true;
-	m_resize_frame = false;
+    m_make_filename = true;
+    m_resize_frame = false;
 
-	wxFileName fn = wxFileName::DirName( wxStandardPaths::Get().GetUserConfigDir() );
-	fn.SetFullName(wxT(".latexpreview"));
-	m_config = fn.GetFullPath();
+    wxFileName fn = wxFileName::DirName( wxStandardPaths::Get().GetUserConfigDir() );
+    fn.SetFullName(wxT(".latexpreview"));
+    m_config = fn.GetFullPath();
 
 ////@begin LatexPreviewWindow member initialisation
     m_autorender = false;
@@ -350,7 +350,7 @@ void LatexPreviewWindow::Init()
  */
 
 void LatexPreviewWindow::CreateControls()
-{    
+{
 ////@begin LatexPreviewWindow content construction
     LatexPreviewWindow* itemFrame1 = this;
 
@@ -484,7 +484,7 @@ void LatexPreviewWindow::CreateControls()
     m_control_image->Connect(ID_FOREIGN_IMAGE_PREVIEW, wxEVT_LEFT_DOWN, wxMouseEventHandler(LatexPreviewWindow::OnLeftDown), NULL, this);
 ////@end LatexPreviewWindow content construction
 
-	m_control_image->SetBackgroundColour(*wxWHITE);
+    m_control_image->SetBackgroundColour(*wxWHITE);
 }
 
 
@@ -535,7 +535,7 @@ wxIcon LatexPreviewWindow::GetIconResource( const wxString& name )
 
 void LatexPreviewWindow::OnExitClick( wxCommandEvent& event )
 {
-	Close();
+    Close();
 }
 
 
@@ -547,186 +547,186 @@ void LatexPreviewWindow::OnExitClick( wxCommandEvent& event )
 
 void LatexPreviewWindow::OnTextctrlInputTextUpdated( wxCommandEvent& event )
 {
-	if (m_autorender)
-		Rebuild();
+    if (m_autorender)
+        Rebuild();
 }
 
 
 bool LatexPreviewWindow::LoadConfig(ConfigData& data)
 {
-	if (!wxFileName::IsFileReadable(m_config)) {
-		GetDefaultConfig(data);
-		return false;
-	}
+    if (!wxFileName::IsFileReadable(m_config)) {
+        GetDefaultConfig(data);
+        return false;
+    }
 
-	wxFileInputStream file(m_config);
-	if (!file.IsOk()) {
-		GetDefaultConfig(data);
-		return false;
-	}
+    wxFileInputStream file(m_config);
+    if (!file.IsOk()) {
+        GetDefaultConfig(data);
+        return false;
+    }
 
-	wxFileConfig config(file);
+    wxFileConfig config(file);
 
-	config.Read(wxT("/config/autorender"), &data.autorender, data.autorender);
-	config.Read(wxT("/window/width"), &data.width, data.width);
-	config.Read(wxT("/window/height"), &data.height, data.height);
+    config.Read(wxT("/config/autorender"), &data.autorender, data.autorender);
+    config.Read(wxT("/window/width"), &data.width, data.width);
+    config.Read(wxT("/window/height"), &data.height, data.height);
 
-	config.Read(wxT("/document/header/tex"), &data.texplate, data.texplate);
-	config.Read(wxT("/document/formula/tex"), &data.textro, data.textro);
-	config.Read(wxT("/document/formula/select_start"), &data.select_start, data.select_start);
-	config.Read(wxT("/document/formula/select_end"), &data.select_end, data.select_end);
+    config.Read(wxT("/document/header/tex"), &data.texplate, data.texplate);
+    config.Read(wxT("/document/formula/tex"), &data.textro, data.textro);
+    config.Read(wxT("/document/formula/select_start"), &data.select_start, data.select_start);
+    config.Read(wxT("/document/formula/select_end"), &data.select_end, data.select_end);
 
-	config.Read(wxT("/output/transparent"), &data.transparent, data.transparent);
-	config.Read(wxT("/output/filetype"), &data.file_type, data.file_type);
+    config.Read(wxT("/output/transparent"), &data.transparent, data.transparent);
+    config.Read(wxT("/output/filetype"), &data.file_type, data.file_type);
 
-	return true;
+    return true;
 }
 
 bool LatexPreviewWindow::SaveConfig(const ConfigData& data)
 {
-	wxFileConfig config;
+    wxFileConfig config;
 
-	config.Write(wxT("/config/autorender"), data.autorender);
-	config.Write(wxT("/window/width"), data.width);
-	config.Write(wxT("/window/height"), data.height);
+    config.Write(wxT("/config/autorender"), data.autorender);
+    config.Write(wxT("/window/width"), data.width);
+    config.Write(wxT("/window/height"), data.height);
 
-	config.Write(wxT("/document/header/tex"), data.texplate);
-	config.Write(wxT("/document/formula/tex"), data.textro);
-	config.Write(wxT("/document/formula/select_start"), data.select_start);
-	config.Write(wxT("/document/formula/select_end"), data.select_end);
+    config.Write(wxT("/document/header/tex"), data.texplate);
+    config.Write(wxT("/document/formula/tex"), data.textro);
+    config.Write(wxT("/document/formula/select_start"), data.select_start);
+    config.Write(wxT("/document/formula/select_end"), data.select_end);
 
-	config.Write(wxT("/output/transparent"), data.transparent);
-	config.Write(wxT("/output/filetype"), data.file_type);
+    config.Write(wxT("/output/transparent"), data.transparent);
+    config.Write(wxT("/output/filetype"), data.file_type);
 
-	wxFileOutputStream file(m_config);
-	if (!file.IsOk())
-		return false;
-	config.Save(file);
+    wxFileOutputStream file(m_config);
+    if (!file.IsOk())
+        return false;
+    config.Save(file);
 
-	return true;
+    return true;
 }
 
 void LatexPreviewWindow::GetDefaultConfig(ConfigData& data)
 {
-	data.width = 400;
-	data.height = 200;
-	data.texplate = GetDefaultTemplate();
-	data.textro = GetDefaultFormula();
-	data.select_start = 0;
-	data.select_end = data.textro.size();
-	data.autorender = false;
-	data.transparent = true;
-	data.file_type = filetype::png;
+    data.width = 400;
+    data.height = 200;
+    data.texplate = GetDefaultTemplate();
+    data.textro = GetDefaultFormula();
+    data.select_start = 0;
+    data.select_end = data.textro.size();
+    data.autorender = false;
+    data.transparent = true;
+    data.file_type = filetype::png;
 }
 
 wxString LatexPreviewWindow::GetDefaultTemplate()
 {
-	return wxString() +
-		wxT("\\documentclass[12pt]{article}\n") +
-		wxT("\\usepackage[dvips]{graphicx}\n") +
-		wxT("\\usepackage{amsmath}\n") +
-		wxT("\\usepackage{amssymb}\n") +
-		wxT("\\pagestyle{empty}\n") +
-		wxT("\\begin{document}\n\n") +
-		wxT("\\begin{align*}\n") +
-		insert_marker + wxT("\n") +
-		wxT("\\end{align*}\n\n") +
-		wxT("\\end{document}\n") +
+    return wxString() +
+        wxT("\\documentclass[12pt]{article}\n") +
+        wxT("\\usepackage[dvips]{graphicx}\n") +
+        wxT("\\usepackage{amsmath}\n") +
+        wxT("\\usepackage{amssymb}\n") +
+        wxT("\\pagestyle{empty}\n") +
+        wxT("\\begin{document}\n\n") +
+        wxT("\\begin{align*}\n") +
+        insert_marker + wxT("\n") +
+        wxT("\\end{align*}\n\n") +
+        wxT("\\end{document}\n") +
         wxString();
 }
 wxString LatexPreviewWindow::GetDefaultFormula()
 {
-	return wxString() +
-		wxT("\\int\\limits_\\mathbb{R} e^{-x^2} dx = \\sqrt{\\pi}") +
+    return wxString() +
+        wxT("\\int\\limits_\\mathbb{R} e^{-x^2} dx = \\sqrt{\\pi}") +
         wxString();
 }
 
 bool LatexPreviewWindow::Rebuild(bool switch_to_log)
 {
-	wxBitmap img;
-	execution_info info;
-	bool success = Build(
-			m_control_input->GetValue(),
-			m_control_template->GetValue(),
-			img,
-			info);
+    wxBitmap img;
+    execution_info info;
+    bool success = Build(
+            m_control_input->GetValue(),
+            m_control_template->GetValue(),
+            img,
+            info);
 
-	m_control_log_operation->ChangeValue(info.cmd);
-	m_control_log_exitcode->ChangeValue(wxString::Format(wxT("%i") , info.exitcode));
-	m_control_log->ChangeValue(info.out);
+    m_control_log_operation->ChangeValue(info.cmd);
+    m_control_log_exitcode->ChangeValue(wxString::Format(wxT("%i") , info.exitcode));
+    m_control_log->ChangeValue(info.out);
 
-	if (success) {
-		SetImage(img);
-		m_panel_log->Show(false);
-	}
-	else {
-		m_panel_log->Show(true);
-		if (switch_to_log)
-			m_notebook->ChangeSelection(2);		// to do: => ShowLog
-	}
+    if (success) {
+        SetImage(img);
+        m_panel_log->Show(false);
+    }
+    else {
+        m_panel_log->Show(true);
+        if (switch_to_log)
+            m_notebook->ChangeSelection(2);     // to do: => ShowLog
+    }
 
-	m_control_input->DiscardEdits();
-	return success;
+    m_control_input->DiscardEdits();
+    return success;
 }
 
 bool LatexPreviewWindow::Build(
-		const wxString& text,
-		const wxString& texplate,
-		wxBitmap& img,
-		execution_info& info )
+        const wxString& text,
+        const wxString& texplate,
+        wxBitmap& img,
+        execution_info& info )
 {
-	// to do: generate less files?
-	wxFileName name; 
-	if (m_make_filename) {
-		name.AssignTempFileName(wxT("latex_preview_"));
-		wxRemoveFile(name.GetFullPath());
-	} else
-		name = m_filename;
+    // to do: generate less files?
+    wxFileName name;
+    if (m_make_filename) {
+        name.AssignTempFileName(wxT("latex_preview_"));
+        wxRemoveFile(name.GetFullPath());
+    } else
+        name = m_filename;
 
-	wxString basename = name.GetPath() + wxT("/") + name.GetName();
+    wxString basename = name.GetPath() + wxT("/") + name.GetName();
 
-	int ft = m_filetype;
-	bool tr = m_transparent;
+    int ft = m_filetype;
+    bool tr = m_transparent;
 
-	wxString file_tex = basename + wxT(".tex"),
-			 file_dvi = basename + wxT(".dvi"),
-			 file_png = basename + wxT(".png"),
-			 file_gif = basename + wxT(".gif"),
-			 file_img = ft == filetype::gif ? file_gif : file_png;
+    wxString file_tex = basename + wxT(".tex"),
+             file_dvi = basename + wxT(".dvi"),
+             file_png = basename + wxT(".png"),
+             file_gif = basename + wxT(".gif"),
+             file_img = ft == filetype::gif ? file_gif : file_png;
 
-	ChangeCwd dummy(name.GetPath());
+    ChangeCwd dummy(name.GetPath());
 
-	bool success =
-		BuildTex(text, texplate, file_tex, info) &&
-		BuildDvi(file_tex, file_dvi, info) &&
-		BuildImg(file_dvi, file_img, ft, tr, info);
+    bool success =
+        BuildTex(text, texplate, file_tex, info) &&
+        BuildDvi(file_tex, file_dvi, info) &&
+        BuildImg(file_dvi, file_img, ft, tr, info);
 
-	wxRemoveFile(basename + wxT(".tex"));
-	wxRemoveFile(basename + wxT(".log"));
-	wxRemoveFile(basename + wxT(".dvi"));
-	wxRemoveFile(basename + wxT(".aux"));
+    wxRemoveFile(basename + wxT(".tex"));
+    wxRemoveFile(basename + wxT(".log"));
+    wxRemoveFile(basename + wxT(".dvi"));
+    wxRemoveFile(basename + wxT(".aux"));
 
-	if (!success) {
-		return false;
-	}
+    if (!success) {
+        return false;
+    }
 
-	m_make_filename = false;
-	m_filename = basename;
-	m_filename_img = file_img;
+    m_make_filename = false;
+    m_filename = basename;
+    m_filename_img = file_img;
 
-	if (ft == filetype::gif)
-		return img.LoadFile(file_gif, wxBITMAP_TYPE_GIF);
-	return img.LoadFile(file_png, wxBITMAP_TYPE_PNG);
+    if (ft == filetype::gif)
+        return img.LoadFile(file_gif, wxBITMAP_TYPE_GIF);
+    return img.LoadFile(file_png, wxBITMAP_TYPE_PNG);
 }
 
 bool LatexPreviewWindow::BuildTex(
-		const wxString& _text,
-		const wxString& texplate,
-		const wxString& file_tex,
-		execution_info& info )
+        const wxString& _text,
+        const wxString& texplate,
+        const wxString& file_tex,
+        execution_info& info )
 {
-	info.cmd = wxT("generate .tex code");
-	info.exitcode = 0;
+    info.cmd = wxT("generate .tex code");
+    info.exitcode = 0;
 
     wxString text = _text;
     text.Trim(true);
@@ -734,27 +734,27 @@ bool LatexPreviewWindow::BuildTex(
     while (text.Replace(wxT(" \n"), wxT("\n"))) ;
     while (text.Replace(wxT("\n\n"), wxT("\\\\\n"))) ;
 
-	wxString tex = texplate;
-	if (tex.Replace(insert_marker, text) == 0) {
-		info.out = wxT("Did not find insert marker ('") + insert_marker + wxT("') in template!");
-		info.err = wxT("");
-		return false;
-	}
+    wxString tex = texplate;
+    if (tex.Replace(insert_marker, text) == 0) {
+        info.out = wxT("Did not find insert marker ('") + insert_marker + wxT("') in template!");
+        info.err = wxT("");
+        return false;
+    }
 
-	if (!SaveFile(file_tex, tex)) {
-		info.out = wxT("Failed to generate tex file: '") + file_tex + wxT("'.");
-		info.err = wxT("");
-	}
+    if (!SaveFile(file_tex, tex)) {
+        info.out = wxT("Failed to generate tex file: '") + file_tex + wxT("'.");
+        info.err = wxT("");
+    }
 
-	return true;
+    return true;
 }
 
 
 
 bool LatexPreviewWindow::BuildDvi(
-		const wxString& file_tex,
-		const wxString& file_dvi,
-		execution_info& info )
+        const wxString& file_tex,
+        const wxString& file_dvi,
+        execution_info& info )
 {
     std::vector<std::string> args;
     bas::push_back(args)
@@ -767,11 +767,11 @@ bool LatexPreviewWindow::BuildDvi(
 
 
 bool LatexPreviewWindow::BuildImg(
-		const wxString& file_dvi,
-		const wxString& file_img,
-		int ft,
-		bool transparent,
-		execution_info& info )
+        const wxString& file_dvi,
+        const wxString& file_img,
+        int ft,
+        bool transparent,
+        execution_info& info )
 {
     std::vector<std::string> args;
     bas::push_back(args)(bp::search_path("dvipng"));
@@ -795,64 +795,64 @@ bool LatexPreviewWindow::BuildImg(
         ("-o")(to_std(file_img))
         (to_std(file_dvi));
 
-	return execute(args, info);
+    return execute(args, info);
 }
 
 void LatexPreviewWindow::SetImage(const wxBitmap& img)
 {
-	Freeze();
+    Freeze();
 
-	int old_width = 0,
-		old_height = 0;
-	if (m_img.IsOk()) {
-		old_width = m_img.GetWidth();
-		old_height = m_img.GetHeight();
-	}
+    int old_width = 0,
+        old_height = 0;
+    if (m_img.IsOk()) {
+        old_width = m_img.GetWidth();
+        old_height = m_img.GetHeight();
+    }
 
-	wxSize increase(img.GetWidth() - old_width,
-					img.GetHeight() - old_height),
-		   frame_size( GetSize() ),
-		   new_img_size(img.GetWidth() + 40, img.GetHeight() + 40);
-	m_img = img;
+    wxSize increase(img.GetWidth() - old_width,
+                    img.GetHeight() - old_height),
+           frame_size( GetSize() ),
+           new_img_size(img.GetWidth() + 40, img.GetHeight() + 40);
+    m_img = img;
 
-	// m_mainpanel->Layout();
+    // m_mainpanel->Layout();
 
-	// m_control_image->SetVirtualSizeHints( new_img_size );
-	m_control_image->SetInitialSize( new_img_size );
-	m_control_image->SetMinSize( new_img_size );
-	m_control_image->SetSize( new_img_size );
+    // m_control_image->SetVirtualSizeHints( new_img_size );
+    m_control_image->SetInitialSize( new_img_size );
+    m_control_image->SetMinSize( new_img_size );
+    m_control_image->SetSize( new_img_size );
 
-	m_panel_formula->GetSizer()->Layout();
-	GetSizer()->SetSizeHints(this);
+    m_panel_formula->GetSizer()->Layout();
+    GetSizer()->SetSizeHints(this);
 
-	if (m_resize_frame) {
-		if (m_control_image->GetSize().x > m_panel_image->GetSize().x)
-			frame_size.x += m_control_image->GetSize().x - m_panel_image->GetSize().x;
-		frame_size.y += increase.y;
-	}
+    if (m_resize_frame) {
+        if (m_control_image->GetSize().x > m_panel_image->GetSize().x)
+            frame_size.x += m_control_image->GetSize().x - m_panel_image->GetSize().x;
+        frame_size.y += increase.y;
+    }
 
-	// m_control_image->Refresh();
-	// m_control_image->Update();
-	// m_mainpanel->GetSizer()->SetSizeHints(m_mainpanel);
+    // m_control_image->Refresh();
+    // m_control_image->Update();
+    // m_mainpanel->GetSizer()->SetSizeHints(m_mainpanel);
 
-	SetSize(frame_size);
-	Thaw();
+    SetSize(frame_size);
+    Thaw();
 
-	Refresh();
+    Refresh();
 }
 
 
 void LatexPreviewWindow::SetDirty()
 {
-	m_dirty = true;
-	if (ShouldBuild())
-		Rebuild();
+    m_dirty = true;
+    if (ShouldBuild())
+        Rebuild();
 }
 
 bool LatexPreviewWindow::ShouldBuild()
 {
-	return m_dirty && m_autorender &&
-		m_notebook->GetCurrentPage() == m_notebook->GetPage(0);
+    return m_dirty && m_autorender &&
+        m_notebook->GetCurrentPage() == m_notebook->GetPage(0);
 }
 
 
@@ -862,14 +862,14 @@ bool LatexPreviewWindow::ShouldBuild()
 
 void LatexPreviewWindow::OnLeftDown( wxMouseEvent& event )
 {
-	wxFileDataObject data;
-	data.AddFile(m_filename_img);
+    wxFileDataObject data;
+    data.AddFile(m_filename_img);
 
-	wxDropSource source(data, this);
-	wxDragResult result = source.DoDragDrop(wxDrag_CopyOnly);
+    wxDropSource source(data, this);
+    wxDragResult result = source.DoDragDrop(wxDrag_CopyOnly);
 
-	if (result == wxDragCopy || result == wxDragLink)
-		m_make_filename = true;
+    if (result == wxDragCopy || result == wxDragLink)
+        m_make_filename = true;
 }
 
 /*
@@ -878,8 +878,8 @@ void LatexPreviewWindow::OnLeftDown( wxMouseEvent& event )
 
 void LatexPreviewWindow::OnMenuitemFtPngClick( wxCommandEvent& event )
 {
-	m_filetype = filetype::png;
-	SetDirty();
+    m_filetype = filetype::png;
+    SetDirty();
 }
 
 
@@ -889,7 +889,7 @@ void LatexPreviewWindow::OnMenuitemFtPngClick( wxCommandEvent& event )
 
 void LatexPreviewWindow::OnMenuitemFtPngUpdate( wxUpdateUIEvent& event )
 {
-	event.Check(m_filetype == filetype::png);
+    event.Check(m_filetype == filetype::png);
 }
 
 
@@ -899,8 +899,8 @@ void LatexPreviewWindow::OnMenuitemFtPngUpdate( wxUpdateUIEvent& event )
 
 void LatexPreviewWindow::OnMenuitemFtGifClick( wxCommandEvent& event )
 {
-	m_filetype = filetype::gif;
-	SetDirty();
+    m_filetype = filetype::gif;
+    SetDirty();
 }
 
 
@@ -910,7 +910,7 @@ void LatexPreviewWindow::OnMenuitemFtGifClick( wxCommandEvent& event )
 
 void LatexPreviewWindow::OnMenuitemFtGifUpdate( wxUpdateUIEvent& event )
 {
-	event.Check(m_filetype == filetype::gif);
+    event.Check(m_filetype == filetype::gif);
 }
 
 
@@ -920,8 +920,8 @@ void LatexPreviewWindow::OnMenuitemFtGifUpdate( wxUpdateUIEvent& event )
 
 void LatexPreviewWindow::OnMenuitemBgTransparentClick( wxCommandEvent& event )
 {
-	m_transparent = event.IsChecked();
-	SetDirty();
+    m_transparent = event.IsChecked();
+    SetDirty();
 }
 
 
@@ -931,8 +931,8 @@ void LatexPreviewWindow::OnMenuitemBgTransparentClick( wxCommandEvent& event )
 
 void LatexPreviewWindow::OnMenuitemBgTransparentUpdate( wxUpdateUIEvent& event )
 {
-	event.Check(m_transparent);
-	SetDirty();
+    event.Check(m_transparent);
+    SetDirty();
 }
 
 /*
@@ -941,18 +941,18 @@ void LatexPreviewWindow::OnMenuitemBgTransparentUpdate( wxUpdateUIEvent& event )
 
 void LatexPreviewWindow::OnOpenClick( wxCommandEvent& event )
 {
-	wxFileDialog dlg( this,
-			wxT("Open template.."),
-			wxT(""),
-			wxT(""),
-			wxT("*"),
-			wxFD_OPEN | wxFD_FILE_MUST_EXIST );
+    wxFileDialog dlg( this,
+            wxT("Open template.."),
+            wxT(""),
+            wxT(""),
+            wxT("*"),
+            wxFD_OPEN | wxFD_FILE_MUST_EXIST );
 
-	if (dlg.ShowModal() == wxID_OK) {
-		wxString texplate;
-		if (LoadFile(dlg.GetPath(), texplate))
-			m_control_template->ChangeValue(texplate);
-	}
+    if (dlg.ShowModal() == wxID_OK) {
+        wxString texplate;
+        if (LoadFile(dlg.GetPath(), texplate))
+            m_control_template->ChangeValue(texplate);
+    }
 }
 
 
@@ -964,18 +964,18 @@ void LatexPreviewWindow::OnOpenClick( wxCommandEvent& event )
 
 void LatexPreviewWindow::OnCloseWindow( wxCloseEvent& event )
 {
-	ConfigData cfg;
-	LoadConfig(cfg);
+    ConfigData cfg;
+    LoadConfig(cfg);
 
-	cfg.width = GetSize().x;
-	cfg.height = GetSize().y;
+    cfg.width = GetSize().x;
+    cfg.height = GetSize().y;
 
-	cfg.autorender = m_autorender;
-	cfg.transparent = m_transparent;
-	cfg.file_type = m_filetype;
-	SaveConfig(cfg);
+    cfg.autorender = m_autorender;
+    cfg.transparent = m_transparent;
+    cfg.file_type = m_filetype;
+    SaveConfig(cfg);
 
-	event.Skip();
+    event.Skip();
 }
 
 
@@ -986,7 +986,7 @@ void LatexPreviewWindow::OnCloseWindow( wxCloseEvent& event )
 
 void LatexPreviewWindow::OnCloseClick( wxCommandEvent& event )
 {
-	Close();
+    Close();
 }
 
 
@@ -996,17 +996,17 @@ void LatexPreviewWindow::OnCloseClick( wxCommandEvent& event )
 
 void LatexPreviewWindow::OnSaveClick( wxCommandEvent& event )
 {
-	ConfigData cfg;
-	LoadConfig(cfg);
-	cfg.textro = m_control_input->GetValue();
+    ConfigData cfg;
+    LoadConfig(cfg);
+    cfg.textro = m_control_input->GetValue();
 
-	long sel_start, sel_end;
-	m_control_input->GetSelection(&sel_start, &sel_end);
+    long sel_start, sel_end;
+    m_control_input->GetSelection(&sel_start, &sel_end);
 
-	cfg.select_start = sel_start;
-	cfg.select_end = sel_end;
+    cfg.select_start = sel_start;
+    cfg.select_end = sel_end;
 
-	SaveConfig(cfg);
+    SaveConfig(cfg);
 }
 
 
@@ -1016,10 +1016,10 @@ void LatexPreviewWindow::OnSaveClick( wxCommandEvent& event )
 
 void LatexPreviewWindow::OnRevertToSavedClick( wxCommandEvent& event )
 {
-	ConfigData cfg;
-	LoadConfig(cfg);
-	m_control_input->ChangeValue(cfg.textro);
-	SetDirty();
+    ConfigData cfg;
+    LoadConfig(cfg);
+    m_control_input->ChangeValue(cfg.textro);
+    SetDirty();
 }
 
 
@@ -1029,8 +1029,8 @@ void LatexPreviewWindow::OnRevertToSavedClick( wxCommandEvent& event )
 
 void LatexPreviewWindow::OnDefaultClick( wxCommandEvent& event )
 {
-	m_control_input->ChangeValue(GetDefaultFormula());
-	SetDirty();
+    m_control_input->ChangeValue(GetDefaultFormula());
+    SetDirty();
 }
 
 
@@ -1040,10 +1040,10 @@ void LatexPreviewWindow::OnDefaultClick( wxCommandEvent& event )
 
 void LatexPreviewWindow::OnSaveTplClick( wxCommandEvent& event )
 {
-	ConfigData cfg;
-	LoadConfig(cfg);
-	cfg.texplate = m_control_template->GetValue();
-	SaveConfig(cfg);
+    ConfigData cfg;
+    LoadConfig(cfg);
+    cfg.texplate = m_control_template->GetValue();
+    SaveConfig(cfg);
 }
 
 
@@ -1053,10 +1053,10 @@ void LatexPreviewWindow::OnSaveTplClick( wxCommandEvent& event )
 
 void LatexPreviewWindow::OnRevertToSavedTplClick( wxCommandEvent& event )
 {
-	ConfigData cfg;
-	LoadConfig(cfg);
-	m_control_template->ChangeValue(cfg.texplate);
-	SetDirty();
+    ConfigData cfg;
+    LoadConfig(cfg);
+    m_control_template->ChangeValue(cfg.texplate);
+    SetDirty();
 }
 
 
@@ -1066,8 +1066,8 @@ void LatexPreviewWindow::OnRevertToSavedTplClick( wxCommandEvent& event )
 
 void LatexPreviewWindow::OnDefaultTplClick( wxCommandEvent& event )
 {
-	m_control_template->ChangeValue(GetDefaultTemplate());
-	SetDirty();
+    m_control_template->ChangeValue(GetDefaultTemplate());
+    SetDirty();
 }
 
 
@@ -1077,15 +1077,15 @@ void LatexPreviewWindow::OnDefaultTplClick( wxCommandEvent& event )
 
 void LatexPreviewWindow::OnSaveasClick( wxCommandEvent& event )
 {
-	wxFileDialog dlg( this,
-			wxT("Save image to.."),
-			wxT(""),
-			wxFileName(m_filename_img).GetFullName(),
-			wxT("*"),
-			wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
+    wxFileDialog dlg( this,
+            wxT("Save image to.."),
+            wxT(""),
+            wxFileName(m_filename_img).GetFullName(),
+            wxT("*"),
+            wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
 
-	if (dlg.ShowModal() == wxID_OK)
-		wxCopyFile(m_filename_img, dlg.GetPath());
+    if (dlg.ShowModal() == wxID_OK)
+        wxCopyFile(m_filename_img, dlg.GetPath());
 }
 
 
@@ -1095,9 +1095,9 @@ void LatexPreviewWindow::OnSaveasClick( wxCommandEvent& event )
 
 void LatexPreviewWindow::OnMenuitemAutorenderClick( wxCommandEvent& event )
 {
-	m_autorender = event.IsChecked();
-	if (ShouldBuild())
-		Rebuild();
+    m_autorender = event.IsChecked();
+    if (ShouldBuild())
+        Rebuild();
 }
 
 
@@ -1107,7 +1107,7 @@ void LatexPreviewWindow::OnMenuitemAutorenderClick( wxCommandEvent& event )
 
 void LatexPreviewWindow::OnMenuitemAutorenderUpdate( wxUpdateUIEvent& event )
 {
-	event.Check(m_autorender);
+    event.Check(m_autorender);
 }
 
 
@@ -1117,7 +1117,7 @@ void LatexPreviewWindow::OnMenuitemAutorenderUpdate( wxUpdateUIEvent& event )
 
 void LatexPreviewWindow::OnTextctrlTemplateTextUpdated( wxCommandEvent& event )
 {
-	SetDirty();
+    SetDirty();
 }
 
 
@@ -1127,7 +1127,7 @@ void LatexPreviewWindow::OnTextctrlTemplateTextUpdated( wxCommandEvent& event )
 
 void LatexPreviewWindow::OnRefreshClick( wxCommandEvent& event )
 {
-	Rebuild(true);
+    Rebuild(true);
 }
 
 /*
@@ -1136,8 +1136,8 @@ void LatexPreviewWindow::OnRefreshClick( wxCommandEvent& event )
 
 void LatexPreviewWindow::OnNotebookPageChanged( wxNotebookEvent& event )
 {
-	if (ShouldBuild())
-		Rebuild();
+    if (ShouldBuild())
+        Rebuild();
 }
 
 
@@ -1147,8 +1147,8 @@ void LatexPreviewWindow::OnNotebookPageChanged( wxNotebookEvent& event )
 
 void LatexPreviewWindow::OnSize( wxSizeEvent& event )
 {
-	// to do ...
-	m_control_image->Refresh();
+    // to do ...
+    m_control_image->Refresh();
     event.Skip();
 }
 
@@ -1159,15 +1159,15 @@ void LatexPreviewWindow::OnSize( wxSizeEvent& event )
 
 void LatexPreviewWindow::OnPaint( wxPaintEvent& event )
 {
-	wxPaintDC dc(m_control_image);
+    wxPaintDC dc(m_control_image);
 
-	// dc.SetBackground(*wxWHITE_BRUSH);
-	// dc.Clear();
+    // dc.SetBackground(*wxWHITE_BRUSH);
+    // dc.Clear();
 
-	dc.DrawBitmap( m_img,
-			(dc.GetSize().x - m_img.GetWidth() + 1) / 2,
-			(dc.GetSize().y - m_img.GetHeight() + 1) / 2,
-			true );
+    dc.DrawBitmap( m_img,
+            (dc.GetSize().x - m_img.GetWidth() + 1) / 2,
+            (dc.GetSize().y - m_img.GetHeight() + 1) / 2,
+            true );
 }
 
 
@@ -1177,13 +1177,13 @@ void LatexPreviewWindow::OnPaint( wxPaintEvent& event )
 
 void LatexPreviewWindow::OnAboutClick( wxCommandEvent& event )
 {
-	wxtk::AboutBox about(this);
-	about.SetDescription( to_wx("Clever text describing the application. Not.") );
-	about.SetBigIcon( GetIconResource(wxT("icon1.xpm")) );
-	about.SetAppname( to_wx("wxLatexPreview\nVersion 1.2") );
-	about.SetTitle( to_wx("About wxLatexPreview") );
-	about.SetCopyright( to_wx("(C) 2010-2012 Thomas Gläßle") );
-	about.ShowModal();
+    wxtk::AboutBox about(this);
+    about.SetDescription( to_wx("Clever text describing the application. Not.") );
+    about.SetBigIcon( GetIconResource(wxT("icon1.xpm")) );
+    about.SetAppname( to_wx("wxLatexPreview\nVersion 1.2") );
+    about.SetTitle( to_wx("About wxLatexPreview") );
+    about.SetCopyright( to_wx("(C) 2010-2012 Thomas Gläßle") );
+    about.ShowModal();
 }
 
 
@@ -1194,21 +1194,21 @@ void LatexPreviewWindow::OnAboutClick( wxCommandEvent& event )
 void LatexPreviewWindow::OnSaveTexClick( wxCommandEvent& event )
 {
     wxFileName name = m_filename;
-	wxString basename = name.GetPath() + wxT("/") + name.GetName();
-	wxString file_tex = basename + wxT(".tex");
+    wxString basename = name.GetPath() + wxT("/") + name.GetName();
+    wxString file_tex = basename + wxT(".tex");
 
-	wxFileDialog dlg( this,
-			wxT("Save TeX file to.."),
-			wxT(""),
-			wxFileName(m_filename_img).GetFullName(),
-			wxT("*"),
-			wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
+    wxFileDialog dlg( this,
+            wxT("Save TeX file to.."),
+            wxT(""),
+            wxFileName(m_filename_img).GetFullName(),
+            wxT("*"),
+            wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
 
-	if (dlg.ShowModal() == wxID_OK) {
+    if (dlg.ShowModal() == wxID_OK) {
         execution_info info;
-		BuildTex(
+        BuildTex(
             m_control_input->GetValue(),
-			m_control_template->GetValue(),
+            m_control_template->GetValue(),
             dlg.GetPath(),
             info);
     }

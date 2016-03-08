@@ -1,12 +1,12 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        window.h
-// Purpose:     
-// Author:      Thomas Gl‰ﬂle
-// Modified by: 
+// Purpose:
+// Author:      Thomas Gl√§√üle
+// Modified by:
 // Created:     Fri 20 Nov 2009 02:01:08 CET
-// RCS-ID:      
-// Copyright:   
-// Licence:     
+// RCS-ID:
+// Copyright:
+// Licence:
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _LATEXPREVIEWWINDOW_H_
@@ -46,29 +46,29 @@ class wxWindow;
 
 
 namespace filetype {
-	enum {
-		png,
-		gif
-	};
+    enum {
+        png,
+        gif
+    };
 };
 
 struct execution_info
 {
-	int exitcode;
-	wxString cmd,
-			 out,
-			 err;
+    int exitcode;
+    wxString cmd,
+             out,
+             err;
 };
 
 
 struct ConfigData
 {
-	int width, height,
-		select_start, select_end;
-//	int select_col_start, select_col_end;
-	wxString textro, texplate;
-	bool autorender, transparent;
-	int file_type;
+    int width, height,
+        select_start, select_end;
+//  int select_col_start, select_col_end;
+    wxString textro, texplate;
+    bool autorender, transparent;
+    int file_type;
 };
 
 
@@ -77,7 +77,7 @@ struct ConfigData
  */
 
 class LatexPreviewWindow: public wxFrame
-{    
+{
     DECLARE_DYNAMIC_CLASS( LatexPreviewWindow )
     DECLARE_EVENT_TABLE()
 
@@ -99,44 +99,44 @@ public:
     void CreateControls();
 
 
-	void GetDefaultConfig(ConfigData&);
-	wxString GetDefaultTemplate();
-	wxString GetDefaultFormula();
-	bool LoadConfig(ConfigData&);
-	bool SaveConfig(const ConfigData&);
+    void GetDefaultConfig(ConfigData&);
+    wxString GetDefaultTemplate();
+    wxString GetDefaultFormula();
+    bool LoadConfig(ConfigData&);
+    bool SaveConfig(const ConfigData&);
 
 
-	bool BuildTex(
-			const wxString& text,
-			const wxString& texplate,
-			const wxString& file_tex,
-			execution_info& info );
+    bool BuildTex(
+            const wxString& text,
+            const wxString& texplate,
+            const wxString& file_tex,
+            execution_info& info );
 
-	bool BuildDvi(
-			const wxString& file_tex,
-			const wxString& file_dvi,
-			execution_info& info );
+    bool BuildDvi(
+            const wxString& file_tex,
+            const wxString& file_dvi,
+            execution_info& info );
 
-	bool BuildImg(
-			const wxString& file_dvi,
-			const wxString& file_img,
-			int ft,
-			bool transparent,
-			execution_info& info );
+    bool BuildImg(
+            const wxString& file_dvi,
+            const wxString& file_img,
+            int ft,
+            bool transparent,
+            execution_info& info );
 
 
-	bool Rebuild(bool switch_to_log = false);
+    bool Rebuild(bool switch_to_log = false);
 
-	bool Build(
-		const wxString& text,
-		const wxString& texplate,
-		wxBitmap& img,
-		execution_info& cmd );
+    bool Build(
+        const wxString& text,
+        const wxString& texplate,
+        wxBitmap& img,
+        execution_info& cmd );
 
-	void SetImage(const wxBitmap& img);
+    void SetImage(const wxBitmap& img);
 
-	void SetDirty();			// require rebuild
-	bool ShouldBuild();
+    void SetDirty();            // require rebuild
+    bool ShouldBuild();
 
 
 
@@ -297,11 +297,11 @@ public:
     };
 ////@end LatexPreviewWindow member variables
 
-	bool m_make_filename;
-	wxString m_filename, m_filename_img;
-	wxString m_config;
-	bool m_dirty, m_resize_frame;
-	wxBitmap m_img;
+    bool m_make_filename;
+    wxString m_filename, m_filename_img;
+    wxString m_config;
+    bool m_dirty, m_resize_frame;
+    wxBitmap m_img;
 };
 
 #endif

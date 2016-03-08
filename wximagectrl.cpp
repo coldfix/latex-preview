@@ -1,12 +1,12 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        wximagectrl.cpp
-// Purpose:     
-// Author:      Thomas Gl‰ﬂle
-// Modified by: 
+// Purpose:
+// Author:      Thomas Gl√§√üle
+// Modified by:
 // Created:     Thu 26 Nov 2009 18:25:10 CET
-// RCS-ID:      
-// Copyright:   
-// Licence:     
+// RCS-ID:
+// Copyright:
+// Licence:
 /////////////////////////////////////////////////////////////////////////////
 
 // For compilers that support precompilation, includes "wx/wx.h".
@@ -108,7 +108,7 @@ void wxImageCtrl::Init()
  */
 
 void wxImageCtrl::CreateControls()
-{    
+{
 ////@begin wxImageCtrl content construction
 ////@end wxImageCtrl content construction
 }
@@ -152,21 +152,21 @@ wxIcon wxImageCtrl::GetIconResource( const wxString& name )
 
 void wxImageCtrl::SetImage(const wxBitmap& bmp)
 {
-	m_img = bmp;
-	wxSize size = DoGetBestSize();
-	SetInitialSize( size );
-	SetMinSize( size );
-	SetSize( size );
+    m_img = bmp;
+    wxSize size = DoGetBestSize();
+    SetInitialSize( size );
+    SetMinSize( size );
+    SetSize( size );
 
 }
 
 wxSize wxImageCtrl::DoGetBestSize() const
 {
-	if (!m_img.IsOk())
-		return wxSize(40, 20);
-	return wxSize(
-			m_img.GetWidth() + 40,
-			m_img.GetHeight() + 20);
+    if (!m_img.IsOk())
+        return wxSize(40, 20);
+    return wxSize(
+            m_img.GetWidth() + 40,
+            m_img.GetHeight() + 20);
 }
 
 
@@ -177,7 +177,7 @@ wxSize wxImageCtrl::DoGetBestSize() const
 
 void wxImageCtrl::OnSize( wxSizeEvent& event )
 {
-	Refresh();
+    Refresh();
     event.Skip();
 }
 
@@ -188,17 +188,17 @@ void wxImageCtrl::OnSize( wxSizeEvent& event )
 
 void wxImageCtrl::OnPaint( wxPaintEvent& event )
 {
-	wxPaintDC dc(this);
+    wxPaintDC dc(this);
 
-	// dc.SetBackground(*wxWHITE_BRUSH);
-	// dc.Clear();
-	if (!m_img.IsOk()) {
-		return;
-	}
+    // dc.SetBackground(*wxWHITE_BRUSH);
+    // dc.Clear();
+    if (!m_img.IsOk()) {
+        return;
+    }
 
-	dc.DrawBitmap( m_img,
-			(dc.GetSize().x - m_img.GetWidth() + 1) / 2,
-			(dc.GetSize().y - m_img.GetHeight() + 1) / 2,
-			true );
+    dc.DrawBitmap( m_img,
+            (dc.GetSize().x - m_img.GetWidth() + 1) / 2,
+            (dc.GetSize().y - m_img.GetHeight() + 1) / 2,
+            true );
 }
 

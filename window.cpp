@@ -54,13 +54,12 @@
 #include <iosfwd>                           // streamsize
 #include <boost/iostreams/categories.hpp>   // sink_tag
 #include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/device/file_descriptor.hpp>
 
 #include "aboutbox.h"
 
 
 namespace bp =  boost::process;
-namespace bpi = boost::process::initializers;
-namespace bfs = boost::filesystem;
 namespace bio = boost::iostreams;
 
 
@@ -105,22 +104,20 @@ bool execute(
         const std::vector<std::string>& args,
         execution_info& info)
 {
-    bp::pipe out_pipe(bp::create_pipe()),
-             err_pipe(bp::create_pipe());
+    bp::pipe out_pipe, err_pipe;
     {
-        bio::file_descriptor_sink out_sink(out_pipe.sink, bio::close_handle),
-                                  err_sink(err_pipe.sink, bio::close_handle);
-        bp::child c = bp::execute(
-            bpi::set_args(args),
-            bpi::bind_stdout(out_sink),
-            bpi::bind_stderr(err_sink),
-            bpi::close_stdin()
-        );
-        info.exitcode = bp::wait_for_exit(c);
+        bp::child c(
+            args,
+            bp::std_out > out_pipe,
+            bp::std_err > err_pipe,
+            bp::std_in < bp::null);
+        c.wait();
+        info.exitcode = c.exit_code();
     }
 
-    bio::file_descriptor_source out_source(out_pipe.source, bio::close_handle),
-                                err_source(err_pipe.source, bio::close_handle);
+    bio::file_descriptor_source
+        out_source(out_pipe.native_source(), bio::close_handle),
+        err_source(err_pipe.native_source(), bio::close_handle);
     string_sink out, err;
     bio::copy(out_source, out);
     bio::copy(err_source, err);

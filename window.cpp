@@ -54,7 +54,6 @@
 #include <iosfwd>                           // streamsize
 #include <boost/iostreams/categories.hpp>   // sink_tag
 #include <boost/iostreams/copy.hpp>
-#include <boost/assign/list_inserter.hpp>   // for 'push_back()'
 
 #include "aboutbox.h"
 
@@ -63,7 +62,6 @@ namespace bp =  boost::process;
 namespace bpi = boost::process::initializers;
 namespace bfs = boost::filesystem;
 namespace bio = boost::iostreams;
-namespace bas = boost::assign;
 
 
 /*
@@ -756,13 +754,21 @@ bool LatexPreviewWindow::BuildDvi(
         const wxString& file_dvi,
         execution_info& info )
 {
-    std::vector<std::string> args;
-    bas::push_back(args)
-        (bp::search_path("latex"))
-        ("--interaction=nonstopmode")
-        (to_std(file_tex));
+    std::vector<std::string> args = {
+        bp::search_path("latex").string(),
+        "--interaction=nonstopmode",
+        to_std(file_tex)
+    };
 
     return execute(args, info);
+}
+
+
+void push_back(
+        std::vector<std::string>& v,
+        std::initializer_list<std::string> args)
+{
+    v.insert(v.end(), args);
 }
 
 
@@ -773,27 +779,21 @@ bool LatexPreviewWindow::BuildImg(
         bool transparent,
         execution_info& info )
 {
-    std::vector<std::string> args;
-    bas::push_back(args)(bp::search_path("dvipng"));
+    std::vector<std::string> args = {bp::search_path("dvipng").string()};
 
     if (m_transparent)
-        bas::push_back(args)("-bg")("transparent");
+        push_back(args, {"-bg", "transparent"});
     else
-        bas::push_back(args)("-bg")("rgb 1.0 1.0 1.0");
+        push_back(args, {"-bg", "rgb 1.0 1.0 1.0"});
 
-    bas::push_back(args)
-        ("-Q")("10")
-        ("-T")("tight")
-        ("--follow");
+    push_back(args, {"-Q", "10", "-T", "tight", "--follow"});
 
     if (m_filetype == filetype::gif)
-        bas::push_back(args)("--gif");
+        args.push_back("--gif");
     else
-        bas::push_back(args)("--png");
+        args.push_back("--png");
 
-    bas::push_back(args)
-        ("-o")(to_std(file_img))
-        (to_std(file_dvi));
+    push_back(args, {"-o", to_std(file_img), to_std(file_dvi)});
 
     return execute(args, info);
 }
